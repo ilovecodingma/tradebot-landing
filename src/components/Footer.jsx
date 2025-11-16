@@ -11,7 +11,7 @@ const Footer = () => {
               </h3>
               <p className="text-gray-400 mb-4">
                 왜 안 샀는지 알려주는 유일한 봇.<br />
-                감사 로그 시스템으로 매매 투명성 100% 확보.
+              
               </p>
               <div className="flex gap-4">
                 <a
