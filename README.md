@@ -10,7 +10,7 @@
 # 의존성 설치
 npm install
 
-# 개발 서버 실행 (http://localhost:5173)
+
 npm run dev
 
 # 프로덕션 빌드
