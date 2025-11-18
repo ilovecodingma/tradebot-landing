@@ -25,43 +25,49 @@ const MagazinePost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header Image */}
-      <div className="relative h-96 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800">
+      <div className="relative h-[500px] bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
         <img
           src={post.thumbnail}
           alt={post.title}
-          className="w-full h-full object-cover opacity-30"
+          className="w-full h-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent"></div>
+
+        {/* Floating Elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl"></div>
+        </div>
       </div>
 
       {/* Article Content */}
-      <article className="max-w-4xl mx-auto px-4 md:px-6 -mt-32 relative z-10">
+      <article className="max-w-5xl mx-auto px-4 md:px-6 -mt-80 relative z-10 pb-20">
         {/* Back Button */}
         <button
           onClick={() => navigate('/magazine')}
-          className="mb-6 text-white hover:text-primary-200 transition-colors flex items-center gap-2"
+          className="mb-8 px-6 py-3 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all duration-300 rounded-full flex items-center gap-2 border border-white/20 shadow-lg"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          매거진 목록으로
+          <span className="font-medium">매거진 목록으로</span>
         </button>
 
         {/* Article Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
           {/* Article Header */}
-          <div className="p-8 md:p-12 border-b border-gray-200">
+          <div className="p-10 md:p-16 border-b-2 border-gray-100 bg-gradient-to-b from-white to-gray-50/50">
             {/* Category Badge */}
-            <div className="mb-4">
-              <span className="px-4 py-2 bg-primary-100 text-primary-700 rounded-full font-medium text-sm">
+            <div className="mb-6">
+              <span className="px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold text-sm shadow-lg shadow-blue-500/30">
                 {post.category}
               </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-8 leading-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
               {post.title}
             </h1>
 
@@ -96,31 +102,39 @@ const MagazinePost = () => {
           </div>
 
           {/* Article Body */}
-          <div className="p-8 md:p-12">
+          <div className="p-10 md:p-16">
             <div className="prose prose-lg max-w-none">
               {post.content.sections.map((section, idx) => (
-                <div key={idx} className="mb-12">
+                <div key={idx} className="mb-16">
                   {/* Section Title */}
-                  <h2 className="text-3xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-primary-600">
-                    {section.title}
-                  </h2>
+                  <div className="mb-8">
+                    <div className="inline-block px-1 mb-3">
+                      <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+                      {section.title}
+                    </h2>
+                  </div>
 
                   {/* Section Content */}
                   {section.content && (
-                    <div className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
+                    <div className="text-lg text-gray-700 leading-relaxed mb-8 whitespace-pre-line bg-gradient-to-r from-gray-50 to-white p-6 rounded-xl border-l-4 border-blue-500">
                       {section.content}
                     </div>
                   )}
 
                   {/* Subsections */}
                   {section.subsections && (
-                    <div className="space-y-8 ml-4">
+                    <div className="space-y-8">
                       {section.subsections.map((subsection, subIdx) => (
-                        <div key={subIdx} className="border-l-4 border-primary-300 pl-6">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                        <div key={subIdx} className="bg-white p-6 rounded-xl border-l-4 border-blue-300 shadow-sm hover:shadow-md transition-shadow">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                            <span className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-bold">
+                              {subIdx + 1}
+                            </span>
                             {subsection.subtitle}
                           </h3>
-                          <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                          <div className="text-gray-700 leading-relaxed whitespace-pre-line text-lg pl-11">
                             {subsection.content}
                           </div>
                         </div>
@@ -133,13 +147,18 @@ const MagazinePost = () => {
           </div>
 
           {/* Tags */}
-          <div className="p-8 md:p-12 bg-gray-50 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">태그</h3>
+          <div className="p-10 md:p-16 bg-gradient-to-b from-gray-50 to-white border-t-2 border-gray-100">
+            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              관련 태그
+            </h3>
             <div className="flex flex-wrap gap-3">
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-4 py-2 bg-white text-gray-700 rounded-full font-medium hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-pointer border border-gray-200"
+                  className="px-5 py-2.5 bg-white text-gray-700 rounded-xl font-medium hover:bg-blue-50 hover:text-blue-700 hover:shadow-md transition-all cursor-pointer border-2 border-gray-200 hover:border-blue-300"
                 >
                   #{tag}
                 </span>
@@ -149,10 +168,10 @@ const MagazinePost = () => {
         </div>
 
         {/* Navigation */}
-        <div className="mt-12 mb-20">
+        <div className="mt-16 text-center">
           <Link
             to="/magazine"
-            className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-lg"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-blue-500/30 transition-all transform hover:scale-105"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
