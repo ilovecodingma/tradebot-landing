@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import postsData from '../data/posts.json';
+import { formatContent, formatListItems, formatCodeBlocks } from '../utils/textFormatter';
 
 const MagazinePost = () => {
   const { postId } = useParams();
@@ -118,25 +119,27 @@ const MagazinePost = () => {
 
                   {/* Section Content */}
                   {section.content && (
-                    <div className="text-lg text-gray-700 leading-relaxed mb-8 whitespace-pre-line bg-gradient-to-r from-gray-50 to-white p-6 rounded-xl border-l-4 border-blue-500">
-                      {section.content}
-                    </div>
+                    <div
+                      className="text-lg text-gray-700 leading-relaxed mb-8 bg-gradient-to-r from-blue-50/30 to-white p-8 rounded-xl border-l-4 border-blue-500 shadow-sm"
+                      dangerouslySetInnerHTML={{ __html: formatCodeBlocks(formatListItems(section.content)) }}
+                    />
                   )}
 
                   {/* Subsections */}
                   {section.subsections && (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {section.subsections.map((subsection, subIdx) => (
-                        <div key={subIdx} className="bg-white p-6 rounded-xl border-l-4 border-blue-300 shadow-sm hover:shadow-md transition-shadow">
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                            <span className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-bold">
+                        <div key={subIdx} className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl border-l-4 border-blue-400 shadow-md hover:shadow-xl transition-all duration-300 hover:border-blue-600">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-5 flex items-center gap-3">
+                            <span className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl text-sm font-bold shadow-lg">
                               {subIdx + 1}
                             </span>
-                            {subsection.subtitle}
+                            <span className="flex-1">{subsection.subtitle}</span>
                           </h3>
-                          <div className="text-gray-700 leading-relaxed whitespace-pre-line text-lg pl-11">
-                            {subsection.content}
-                          </div>
+                          <div
+                            className="text-gray-700 leading-relaxed text-lg pl-13"
+                            dangerouslySetInnerHTML={{ __html: formatCodeBlocks(formatListItems(subsection.content)) }}
+                          />
                         </div>
                       ))}
                     </div>
