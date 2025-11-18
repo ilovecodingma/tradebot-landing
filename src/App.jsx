@@ -1,27 +1,24 @@
-import Hero from './components/Hero'
-import PainPoints from './components/PainPoints'
-import Solution from './components/Solution'
-import Features from './components/Features'
-import Comparison from './components/Comparison'
-import Demo from './components/Demo'
-import Installation from './components/Installation'
-import CTA from './components/CTA'
-import Footer from './components/Footer'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Magazine from './pages/Magazine';
+import MagazinePost from './pages/MagazinePost';
 
 function App() {
   return (
-    <div className="min-h-screen">
-      <Hero />
-      <PainPoints />
-      <Solution />
-      <Features />
-      <Comparison />
-      <Demo />
-      <Installation />
-      <CTA />
-      <Footer />
-    </div>
-  )
+    <Router>
+      <div className="min-h-screen">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/magazine" element={<Magazine />} />
+          <Route path="/magazine/:postId" element={<MagazinePost />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
