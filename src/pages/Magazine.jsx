@@ -12,24 +12,15 @@ const Magazine = () => {
     : postsData.filter(post => post.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white py-20 md:py-32 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block mb-6 px-4 py-2 bg-blue-500/20 backdrop-blur-sm rounded-full border border-blue-400/30">
-              <span className="text-blue-200 text-sm font-medium">암호화폐 전문 리서치</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+      <section className="border-b border-gray-200 py-16 md:py-24">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
               Trading Insights
             </h1>
-            <p className="text-xl md:text-2xl text-slate-300 leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
               데이터 기반 시장 분석과 검증된 트레이딩 전략
             </p>
           </div>
@@ -37,19 +28,19 @@ const Magazine = () => {
       </section>
 
       {/* Posts Grid */}
-      <section className="py-16 md:py-24">
+      <section className="py-12 md:py-16">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             {/* Category Filter */}
-            <div className="mb-8 md:mb-12 flex flex-wrap gap-2 md:gap-3 justify-center">
+            <div className="mb-12 flex flex-wrap gap-2 border-b border-gray-200 pb-4">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 md:px-8 md:py-3 rounded-full text-sm md:text-base font-semibold transition-all duration-300 ${
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                     selectedCategory === category
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200 hover:border-blue-300'
+                      ? 'text-gray-900 border-b-2 border-gray-900'
+                      : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   {category}
@@ -57,86 +48,47 @@ const Magazine = () => {
               ))}
             </div>
 
-            {/* Posts Count */}
-            <div className="mb-8 text-center">
-              <p className="text-gray-600">
-                <span className="font-bold text-blue-600 text-xl">{filteredPosts.length}</span>개의 글
-              </p>
-            </div>
-
             {/* Posts List */}
-            <div className="space-y-6">
+            <div className="space-y-12">
               {filteredPosts.map((post) => (
                 <article
                   key={post.id}
-                  className="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200"
+                  className="group border-b border-gray-200 pb-12 last:border-0"
                 >
-                  <Link to={`/magazine/${post.id}`} className="block md:flex">
-                    {/* Thumbnail */}
-                    <div className="md:w-96 h-64 md:h-80 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0 overflow-hidden">
-                      <img
-                        src={post.thumbnail}
-                        alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                  <Link to={`/magazine/${post.id}`} className="block">
+                    {/* Meta */}
+                    <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+                      <span>{post.author}</span>
+                      <span>·</span>
+                      <span>{post.date}</span>
+                      <span>·</span>
+                      <span>{post.readTime}</span>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-4 md:p-8 lg:p-10 flex-1 flex flex-col justify-between">
-                      <div>
-                        {/* Meta */}
-                        <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-3 md:mb-4 text-xs md:text-sm">
-                          <span className="px-3 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold shadow-sm text-xs md:text-sm">
-                            {post.category}
-                          </span>
-                          <span className="text-gray-500 font-medium">{post.date}</span>
-                          <span className="hidden md:inline text-gray-400">•</span>
-                          <span className="text-gray-500 flex items-center gap-1">
-                            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {post.readTime}
-                          </span>
-                        </div>
+                    {/* Title */}
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 leading-tight group-hover:text-gray-600 transition-colors">
+                      {post.title}
+                    </h2>
 
-                        {/* Title */}
-                        <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 md:mb-4 group-hover:text-blue-600 transition-colors leading-tight">
-                          {post.title}
-                        </h2>
+                    {/* Excerpt */}
+                    <p className="text-base text-gray-600 mb-4 leading-relaxed line-clamp-2">
+                      {post.excerpt}
+                    </p>
 
-                        {/* Excerpt */}
-                        <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-5 leading-relaxed line-clamp-2 md:line-clamp-3">
-                          {post.excerpt}
-                        </p>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-5">
-                          {post.tags.slice(0, 4).map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-0.5 md:px-3 md:py-1 text-xs md:text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Author & Read More */}
-                      <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-gray-100">
-                        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-gray-600">
-                          <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span className="font-medium">{post.author}</span>
-                        </div>
-                        <span className="flex items-center gap-1 md:gap-2 text-blue-600 text-xs md:text-sm font-semibold group-hover:gap-2 md:group-hover:gap-3 transition-all">
-                          <span className="hidden sm:inline">자세히 보기</span>
-                          <span className="sm:hidden">보기</span>
-                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
+                    {/* Footer */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                          {post.category}
                         </span>
+                        {post.tags.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-xs text-gray-500"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </Link>
