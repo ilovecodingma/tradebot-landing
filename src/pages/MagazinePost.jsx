@@ -2,6 +2,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import postsData from '../data/posts.json';
 import { formatContent, formatListItems, formatCodeBlocks } from '../utils/textFormatter';
+import TradingChart from '../components/TradingChart';
+import suiTradingData from '../data/sui-trading-data.csv?raw';
 
 const MagazinePost = () => {
   const { postId } = useParams();
@@ -147,6 +149,24 @@ const MagazinePost = () => {
                 </div>
               ))}
             </div>
+
+            {/* Trading Charts - Only for SUI Trading Log */}
+            {postId === 'sui-trading-log-2024-11-19' && (
+              <div className="mt-16 pt-16 border-t-2 border-gray-200">
+                <div className="mb-12">
+                  <div className="inline-block px-1 mb-3">
+                    <div className="h-1 w-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"></div>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+                    실시간 트레이딩 데이터 분석
+                  </h2>
+                  <p className="text-lg text-gray-600 leading-relaxed">
+                    2025-11-19 KRW-SUI 거래 내역을 MACD 지표와 함께 시각화한 차트입니다.
+                  </p>
+                </div>
+                <TradingChart data={suiTradingData} title="KRW-SUI 3분봉 트레이딩 분석" />
+              </div>
+            )}
           </div>
 
           {/* Tags */}
