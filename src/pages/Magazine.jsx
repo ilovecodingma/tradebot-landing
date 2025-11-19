@@ -5,7 +5,7 @@ import postsData from '../data/posts.json';
 const Magazine = () => {
   const [selectedCategory, setSelectedCategory] = useState('전체');
 
-  const categories = ['전체', '시장 분석', '트레이딩 전략', '기술 분석'];
+  const categories = ['전체', '시장 분석', '트레이딩 전략', '거래 일지', '기술 분석'];
 
   const filteredPosts = selectedCategory === '전체'
     ? postsData
