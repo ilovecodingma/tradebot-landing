@@ -3,7 +3,12 @@ import { useEffect } from 'react';
 import postsData from '../data/posts.json';
 import { formatContent, formatListItems, formatCodeBlocks } from '../utils/textFormatter';
 import TradingChart from '../components/TradingChart';
+import CommunitySentimentChart from '../components/CommunitySentimentChart';
+import TradingSentimentChart from '../components/TradingSentimentChart';
 import suiTradingData from '../data/sui-trading-data.csv?raw';
+import communitySentimentData from '../data/community-sentiment-data.csv?raw';
+import tradingSentiment from '../data/trading-sentiment.csv?raw';
+import coinTradingSentiment from '../data/coin-trading-sentiment.csv?raw';
 
 const MagazinePost = () => {
   const { postId } = useParams();
@@ -118,6 +123,30 @@ const MagazinePost = () => {
               2025-11-19 KRW-SUI 거래 내역을 MACD 지표와 함께 시각화한 차트입니다.
             </p>
             <TradingChart data={suiTradingData} title="KRW-SUI 3분봉 트레이딩 분석" />
+          </div>
+        )}
+
+        {/* Community Sentiment Charts - Only for Community Sentiment Analysis */}
+        {postId === 'community-sentiment-analysis-2025' && (
+          <div className="mt-16 pt-16 border-t border-gray-200 space-y-12">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                커뮤니티 데이터 시각화
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                DCInside 비트코인 갤러리의 4,899개 게시글을 분석한 결과입니다.
+              </p>
+            </div>
+
+            {/* 언급 빈도 차트 */}
+            <CommunitySentimentChart data={communitySentimentData} title="코인별 커뮤니티 언급 빈도" />
+
+            {/* 매매 의견 파이 차트 */}
+            <TradingSentimentChart
+              overallData={tradingSentiment}
+              coinData={coinTradingSentiment}
+              title="커뮤니티 매매 심리 분석"
+            />
           </div>
         )}
 
