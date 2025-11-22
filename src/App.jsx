@@ -4,11 +4,13 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Magazine from './pages/Magazine';
 import MagazinePost from './pages/MagazinePost';
+import WebGLBackground from './components/WebGLBackground';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen">
+      <WebGLBackground />
+      <div className="min-h-screen relative">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
