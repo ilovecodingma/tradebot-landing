@@ -30,6 +30,12 @@ const Navbar = () => {
               >
                 매거진
               </Link>
+              <Link
+                to="/backtest"
+                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+              >
+                백테스트
+              </Link>
               <a
                 href="/#demo-section"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
@@ -100,6 +106,13 @@ const Navbar = () => {
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
             >
               매거진
+            </Link>
+            <Link
+              to="/backtest"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
+            >
+              백테스트
             </Link>
             <a
               href="/#demo-section"

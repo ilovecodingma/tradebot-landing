@@ -5,6 +5,9 @@ export const formatContent = (text) => {
 
   let formatted = text;
 
+  // 마크다운 링크를 HTML 링크로 변환 [텍스트](URL)
+  formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>');
+
   // ** ** 볼드 처리를 HTML로 변환
   formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
 

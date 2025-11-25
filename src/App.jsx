@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Magazine from './pages/Magazine';
 import MagazinePost from './pages/MagazinePost';
+import Backtest from './pages/Backtest';
 import WebGLBackground from './components/WebGLBackground';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/magazine" element={<Magazine />} />
           <Route path="/magazine/:postId" element={<MagazinePost />} />
+          <Route path="/backtest" element={<Backtest />} />
         </Routes>
         <Footer />
       </div>
