@@ -1,4 +1,6 @@
-import { memo, useMemo } from 'react';
+'use client';
+
+import { memo, useMemo, useState } from 'react';
 import {
   ComposedChart,
   Line,
@@ -26,41 +28,9 @@ function downsampleData(data, maxPoints = 300) {
   return downsampled;
 }
 
-// 십자가 커서 컴포넌트
-const CustomCursor = ({ points, width, height, coordinate }) => {
-  if (!points || points.length === 0) return null;
-
-  const { x } = points[0];
-  // coordinate.y는 실제 마우스 Y 위치를 제공
-  const mouseY = coordinate?.y || points[0].y;
-
-  return (
-    <g>
-      {/* 세로선 */}
-      <line
-        x1={x}
-        y1={0}
-        x2={x}
-        y2={height}
-        stroke="#888"
-        strokeWidth={1}
-        strokeDasharray="3 3"
-      />
-      {/* 가로선 */}
-      <line
-        x1={0}
-        y1={mouseY}
-        x2={width}
-        y2={mouseY}
-        stroke="#888"
-        strokeWidth={1}
-        strokeDasharray="3 3"
-      />
-    </g>
-  );
-};
-
 function BacktestChart({ data, result, strategy }) {
+  const [mousePos, setMousePos] = useState({ x: null, y: null });
+
   if (!data || !result) return null;
 
   // 날짜 포맷 함수 (월 일 시:분)
@@ -134,21 +104,37 @@ function BacktestChart({ data, result, strategy }) {
   return (
     <div className="space-y-6">
       {/* 가격 & MACD 차트 */}
-      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500">
+      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500 relative">
         <h3 className="text-xl font-semibold mb-4">가격 차트</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <ComposedChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis
-              dataKey="timestamp"
-              tick={{ fill: '#888', fontSize: 10 }}
-              interval={xAxisInterval}
-            />
-            <YAxis
-              tick={{ fill: '#888', fontSize: 12 }}
-              domain={['auto', 'auto']}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={<CustomCursor />} />
+        <div
+          className="relative"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+          }}
+          onMouseLeave={() => setMousePos({ x: null, y: null })}
+        >
+          {mousePos.x && mousePos.y && (
+            <>
+              <div className="absolute pointer-events-none" style={{ left: mousePos.x, top: 0, width: 1, height: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+              <div className="absolute pointer-events-none" style={{ top: mousePos.y, left: 0, height: 1, width: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+            </>
+          )}
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart
+              data={chartData}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis
+                dataKey="timestamp"
+                tick={{ fill: '#888', fontSize: 10 }}
+                interval={xAxisInterval}
+              />
+              <YAxis
+                tick={{ fill: '#888', fontSize: 12 }}
+                domain={['auto', 'auto']}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
             <Legend wrapperStyle={{ color: '#fff' }} />
 
             {/* 가격 */}
@@ -200,23 +186,38 @@ function BacktestChart({ data, result, strategy }) {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        </div>
       </div>
 
       {/* MACD 차트 */}
-      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500">
+      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500 relative">
         <h3 className="text-xl font-semibold mb-4">MACD</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <ComposedChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis
-              dataKey="timestamp"
-              tick={{ fill: '#888', fontSize: 10 }}
-              interval={xAxisInterval}
-            />
-            <YAxis
-              tick={{ fill: '#888', fontSize: 12 }}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={<CustomCursor />} />
+        <div
+          className="relative"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+          }}
+          onMouseLeave={() => setMousePos({ x: null, y: null })}
+        >
+          {mousePos.x && mousePos.y && (
+            <>
+              <div className="absolute pointer-events-none" style={{ left: mousePos.x, top: 0, width: 1, height: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+              <div className="absolute pointer-events-none" style={{ top: mousePos.y, left: 0, height: 1, width: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+            </>
+          )}
+          <ResponsiveContainer width="100%" height={250}>
+            <ComposedChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis
+                dataKey="timestamp"
+                tick={{ fill: '#888', fontSize: 10 }}
+                interval={xAxisInterval}
+              />
+              <YAxis
+                tick={{ fill: '#888', fontSize: 12 }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
             <Legend wrapperStyle={{ color: '#fff' }} />
 
             {/* Histogram */}
@@ -259,23 +260,38 @@ function BacktestChart({ data, result, strategy }) {
             )}
           </ComposedChart>
         </ResponsiveContainer>
+        </div>
       </div>
 
       {/* 자산 변화 차트 */}
-      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500">
+      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500 relative">
         <h3 className="text-xl font-semibold mb-4">자산 변화</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <ComposedChart data={equityData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis
-              dataKey="timestamp"
-              tick={{ fill: '#888', fontSize: 10 }}
-              interval={Math.floor(equityData.length / 10) || 1}
-            />
-            <YAxis
-              tick={{ fill: '#888', fontSize: 12 }}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={<CustomCursor />} />
+        <div
+          className="relative"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+          }}
+          onMouseLeave={() => setMousePos({ x: null, y: null })}
+        >
+          {mousePos.x && mousePos.y && (
+            <>
+              <div className="absolute pointer-events-none" style={{ left: mousePos.x, top: 0, width: 1, height: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+              <div className="absolute pointer-events-none" style={{ top: mousePos.y, left: 0, height: 1, width: '100%', backgroundColor: '#888', opacity: 0.5 }} />
+            </>
+          )}
+          <ResponsiveContainer width="100%" height={250}>
+            <ComposedChart data={equityData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis
+                dataKey="timestamp"
+                tick={{ fill: '#888', fontSize: 10 }}
+                interval={Math.floor(equityData.length / 10) || 1}
+              />
+              <YAxis
+                tick={{ fill: '#888', fontSize: 12 }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
             <Legend wrapperStyle={{ color: '#fff' }} />
 
             {/* 초기 자산 기준선 */}
@@ -300,6 +316,7 @@ function BacktestChart({ data, result, strategy }) {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

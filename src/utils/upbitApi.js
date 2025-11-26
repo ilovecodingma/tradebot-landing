@@ -1,8 +1,8 @@
 /**
- * Upbit API 연동 유틸리티
+ * Upbit API 연동 유틸리티 (Next.js API 프록시 사용)
  */
 
-const UPBIT_API_BASE = 'https://api.upbit.com/v1';
+const API_BASE = '/api/upbit';
 
 // 인터벌 매핑
 export const INTERVALS = {
@@ -32,43 +32,19 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export async function getOHLCV(market, interval = '5분', count = 200) {
   try {
     const intervalPath = INTERVALS[interval]?.value || 'minutes/5';
-    const url = `${UPBIT_API_BASE}/candles/${intervalPath}`;
+    const params = new URLSearchParams({
+      market,
+      interval: intervalPath,
+      count: count.toString(),
+    });
 
-    // 200개씩 최대 요청 가능
-    const maxPerRequest = 200;
-    const numRequests = Math.ceil(count / maxPerRequest);
-    const allData = [];
+    const response = await fetch(`${API_BASE}/candles?${params}`);
 
-    for (let i = 0; i < numRequests; i++) {
-      const requestCount = Math.min(maxPerRequest, count - (i * maxPerRequest));
-      const params = new URLSearchParams({
-        market,
-        count: requestCount.toString(),
-      });
-
-      // 이전 데이터의 마지막 캔들 시간을 기준으로
-      if (allData.length > 0) {
-        const lastCandle = allData[allData.length - 1];
-        params.append('to', lastCandle.candle_date_time_kst);
-      }
-
-      const response = await fetch(`${url}?${params}`);
-
-      if (!response.ok) {
-        throw new Error(`Upbit API Error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      // 중복 제거하고 추가
-      const newData = i === 0 ? data : data.slice(1);
-      allData.push(...newData);
-
-      // Rate limit 대응 (초당 10회 제한)
-      if (i < numRequests - 1) {
-        await delay(100);
-      }
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
+
+    const allData = await response.json();
 
     // 데이터 정규화 (오래된 것부터)
     return allData.reverse().map(candle => ({
@@ -92,10 +68,10 @@ export async function getOHLCV(market, interval = '5분', count = 200) {
  */
 export async function getMarkets(quoteCurrency = 'KRW') {
   try {
-    const response = await fetch(`${UPBIT_API_BASE}/market/all`);
+    const response = await fetch(`${API_BASE}/markets`);
 
     if (!response.ok) {
-      throw new Error(`Upbit API Error: ${response.status} ${response.statusText}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
     const markets = await response.json();
@@ -125,10 +101,10 @@ export async function getCurrentPrices(markets) {
       markets: markets.join(','),
     });
 
-    const response = await fetch(`${UPBIT_API_BASE}/ticker?${params}`);
+    const response = await fetch(`${API_BASE}/ticker?${params}`);
 
     if (!response.ok) {
-      throw new Error(`Upbit API Error: ${response.status} ${response.statusText}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
     return await response.json();

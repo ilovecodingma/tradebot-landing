@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { useState } from 'react';
 import postsData from '../data/posts.json';
 
@@ -55,7 +57,7 @@ const Magazine = () => {
                   key={post.id}
                   className="group border-b border-gray-200 pb-12 last:border-0"
                 >
-                  <Link to={`/magazine/${post.id}`} className="block">
+                  <Link href={`/magazine/${post.id}`} className="block">
                     {/* Meta */}
                     <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
                       <span>{post.author}</span>

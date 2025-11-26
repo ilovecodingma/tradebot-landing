@@ -1,3 +1,5 @@
+'use client';
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useState, useEffect } from 'react';
 

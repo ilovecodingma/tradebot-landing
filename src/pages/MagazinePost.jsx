@@ -1,18 +1,21 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import postsData from '../data/posts.json';
 import { formatContent, formatListItems, formatCodeBlocks } from '../utils/textFormatter';
 import TradingChart from '../components/TradingChart';
 import CommunitySentimentChart from '../components/CommunitySentimentChart';
 import TradingSentimentChart from '../components/TradingSentimentChart';
-import suiTradingData from '../data/sui-trading-data.csv?raw';
-import communitySentimentData from '../data/community-sentiment-data.csv?raw';
-import tradingSentiment from '../data/trading-sentiment.csv?raw';
-import coinTradingSentiment from '../data/coin-trading-sentiment.csv?raw';
+import suiTradingData from '../data/sui-trading-data.csv';
+import communitySentimentData from '../data/community-sentiment-data.csv';
+import tradingSentiment from '../data/trading-sentiment.csv';
+import coinTradingSentiment from '../data/coin-trading-sentiment.csv';
 
-const MagazinePost = () => {
-  const { postId } = useParams();
-  const navigate = useNavigate();
+const MagazinePost = ({ params }) => {
+  const router = useRouter();
+  const postId = params?.postId;
   const post = postsData.find((p) => p.id === postId);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ const MagazinePost = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">글을 찾을 수 없습니다</h1>
-          <Link to="/magazine" className="text-primary-600 hover:text-primary-700 font-medium">
+          <Link href="/magazine" className="text-primary-600 hover:text-primary-700 font-medium">
             ← 매거진 목록으로 돌아가기
           </Link>
         </div>
@@ -38,7 +41,7 @@ const MagazinePost = () => {
       <article className="max-w-3xl mx-auto px-4 md:px-6 py-12 md:py-20">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/magazine')}
+          onClick={() => router.push('/magazine')}
           className="mb-8 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +170,7 @@ const MagazinePost = () => {
         {/* Navigation */}
         <div className="mt-12 text-center">
           <Link
-            to="/magazine"
+            href="/magazine"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

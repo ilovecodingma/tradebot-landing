@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -10,7 +12,7 @@ const Navbar = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <div className="text-2xl font-bold text-primary-600">
                 TradingBot
               </div>
@@ -19,19 +21,19 @@ const Navbar = () => {
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
               <Link
-                to="/"
+                href="/"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
               >
                 홈
               </Link>
               <Link
-                to="/magazine"
+                href="/magazine"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
               >
                 매거진
               </Link>
               <Link
-                to="/backtest"
+                href="/backtest"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
               >
                 백테스트
@@ -94,21 +96,21 @@ const Navbar = () => {
           {/* Menu Items */}
           <div className="flex-1 py-4">
             <Link
-              to="/"
+              href="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
             >
               홈
             </Link>
             <Link
-              to="/magazine"
+              href="/magazine"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
             >
               매거진
             </Link>
             <Link
-              to="/backtest"
+              href="/backtest"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
             >

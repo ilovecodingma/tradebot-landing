@@ -57,43 +57,34 @@ export default function Backtest() {
     loadMarkets();
   }, []);
 
-  // 데이터 로드
-  const handleLoadData = async () => {
+  // 백테스트 실행 (데이터 자동 로드 포함)
+  const handleRunBacktest = useCallback(async () => {
     setLoading(true);
     setError(null);
     setBacktestResult(null);
 
     try {
+      // 데이터가 없거나 설정이 변경된 경우 자동으로 데이터 로드
       const data = await getOHLCV(selectedMarket, selectedInterval, dataCount);
       setOhlcvData(data);
+
+      // 약간의 지연으로 UI 업데이트 허용
+      setTimeout(() => {
+        try {
+          const result = runBacktest(data, strategy);
+          setBacktestResult(result);
+          setError(null);
+        } catch (err) {
+          setError('백테스트 실행 중 오류: ' + err.message);
+        } finally {
+          setLoading(false);
+        }
+      }, 100);
     } catch (err) {
-      setError(err.message);
-    } finally {
+      setError('데이터 로드 중 오류: ' + err.message);
       setLoading(false);
     }
-  };
-
-  // 백테스트 실행 (메모이제이션)
-  const handleRunBacktest = useCallback(() => {
-    if (ohlcvData.length === 0) {
-      setError('먼저 데이터를 로드해주세요');
-      return;
-    }
-
-    setLoading(true);
-    // 약간의 지연으로 UI 업데이트 허용
-    setTimeout(() => {
-      try {
-        const result = runBacktest(ohlcvData, strategy);
-        setBacktestResult(result);
-        setError(null);
-      } catch (err) {
-        setError('백테스트 실행 중 오류: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    }, 100);
-  }, [ohlcvData, strategy]);
+  }, [selectedMarket, selectedInterval, dataCount, strategy]);
 
   // 전략 파라미터 업데이트 (메모이제이션)
   const updateStrategy = useCallback((key, value) => {
@@ -155,14 +146,6 @@ export default function Backtest() {
                     className="w-full"
                   />
                 </div>
-
-                <button
-                  onClick={handleLoadData}
-                  disabled={loading}
-                  className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-semibold py-2 px-4 rounded transition"
-                >
-                  {loading ? '로딩 중...' : '데이터 로드'}
-                </button>
               </div>
             </div>
 
@@ -297,10 +280,10 @@ export default function Backtest() {
             {/* 백테스트 실행 버튼 */}
             <button
               onClick={handleRunBacktest}
-              disabled={ohlcvData.length === 0 || loading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-3 px-6 rounded-lg transition shadow-lg"
             >
-              {loading ? '⏳ 실행 중...' : '🚀 백테스트 실행'}
+              {loading ? '⏳ 데이터 수집 및 분석 중...' : '🚀 백테스트 실행'}
             </button>
           </div>
 
@@ -424,9 +407,10 @@ export default function Backtest() {
             )}
 
             {/* 초기 상태 */}
-            {!backtestResult && ohlcvData.length === 0 && !error && (
+            {!backtestResult && !error && (
               <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-12 border border-purple-500 text-center">
-                <p className="text-gray-400 text-lg">왼쪽에서 설정을 조정하고 데이터를 로드한 후 백테스트를 실행하세요</p>
+                <p className="text-gray-400 text-lg">왼쪽에서 설정을 조정하고 백테스트를 실행하세요</p>
+                <p className="text-gray-500 text-sm mt-2">백테스트 실행 시 자동으로 데이터를 수집합니다</p>
               </div>
             )}
           </div>

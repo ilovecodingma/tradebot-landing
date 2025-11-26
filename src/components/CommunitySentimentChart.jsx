@@ -1,3 +1,5 @@
+'use client';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useState, useEffect } from 'react';
 

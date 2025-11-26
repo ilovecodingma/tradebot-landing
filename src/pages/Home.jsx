@@ -1,3 +1,5 @@
+'use client';
+
 import Hero from '../components/Hero';
 import PainPoints from '../components/PainPoints';
 import Solution from '../components/Solution';
