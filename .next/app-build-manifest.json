@@ -1,0 +1,92 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/_not-found/page-84125f7e9c81755e.js"
+    ],
+    "/not-found": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/619-ba102abea3e3d0e4.js",
+      "static/chunks/app/not-found-3d3674f2c48e318c.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/css/c9b091eab2cf3e2c.css",
+      "static/chunks/619-ba102abea3e3d0e4.js",
+      "static/chunks/app/layout-192d44591d5dace3.js"
+    ],
+    "/api/upbit/markets/route": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/api/upbit/markets/route-84125f7e9c81755e.js"
+    ],
+    "/api/upbit/route": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/api/upbit/route-84125f7e9c81755e.js"
+    ],
+    "/api/upbit/candles/route": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/api/upbit/candles/route-84125f7e9c81755e.js"
+    ],
+    "/api/upbit/ticker/route": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/api/upbit/ticker/route-84125f7e9c81755e.js"
+    ],
+    "/magazine/page": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/619-ba102abea3e3d0e4.js",
+      "static/chunks/387-e40224f0f1f0acb8.js",
+      "static/chunks/app/magazine/page-0ae31444c882c0dd.js"
+    ],
+    "/backtest/page": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/464-3dab72a4733cdd2c.js",
+      "static/chunks/545-f653f684ac06dcb2.js",
+      "static/chunks/app/backtest/page-93f6c6f0af9f354e.js"
+    ],
+    "/magazine/[postId]/page": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/619-ba102abea3e3d0e4.js",
+      "static/chunks/464-3dab72a4733cdd2c.js",
+      "static/chunks/261-72a4b7ee5c865369.js",
+      "static/chunks/387-e40224f0f1f0acb8.js",
+      "static/chunks/app/magazine/[postId]/page-2b676133ae6f6b7f.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-cfdf89ecfbb25244.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-cf2e1d3491ac955b.js",
+      "static/chunks/main-app-b4f7eef7365b40db.js",
+      "static/chunks/app/page-6be5f671f08a6e8d.js"
+    ]
+  }
+}

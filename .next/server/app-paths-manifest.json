@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/upbit/markets/route": "app/api/upbit/markets/route.js",
+  "/api/upbit/route": "app/api/upbit/route.js",
+  "/api/upbit/candles/route": "app/api/upbit/candles/route.js",
+  "/api/upbit/ticker/route": "app/api/upbit/ticker/route.js",
+  "/magazine/page": "app/magazine/page.js",
+  "/backtest/page": "app/backtest/page.js",
+  "/magazine/[postId]/page": "app/magazine/[postId]/page.js",
+  "/page": "app/page.js"
+}

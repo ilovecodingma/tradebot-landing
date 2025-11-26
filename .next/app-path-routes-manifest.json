@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/upbit/markets/route": "/api/upbit/markets",
+  "/api/upbit/route": "/api/upbit",
+  "/api/upbit/candles/route": "/api/upbit/candles",
+  "/api/upbit/ticker/route": "/api/upbit/ticker",
+  "/magazine/page": "/magazine",
+  "/backtest/page": "/backtest",
+  "/magazine/[postId]/page": "/magazine/[postId]",
+  "/page": "/"
+}
