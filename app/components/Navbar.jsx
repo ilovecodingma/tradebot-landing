@@ -52,12 +52,6 @@ const Navbar = () => {
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
               <Link
-                href="/"
-                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
-              >
-                홈
-              </Link>
-              <Link
                 href="/magazine"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
               >
@@ -75,12 +69,6 @@ const Navbar = () => {
               >
                 백테스트
               </Link>
-              <a
-                href="/#demo-section"
-                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
-              >
-                데모
-              </a>
               {user ? (
                 <div className="relative">
                   <button
@@ -213,13 +201,6 @@ const Navbar = () => {
               </div>
             )}
             <Link
-              href="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
-            >
-              홈
-            </Link>
-            <Link
               href="/magazine"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
@@ -240,13 +221,6 @@ const Navbar = () => {
             >
               백테스트
             </Link>
-            <a
-              href="/#demo-section"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
-            >
-              데모
-            </a>
             {user ? (
               <>
                 <Link
