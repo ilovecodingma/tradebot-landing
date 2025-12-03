@@ -156,6 +156,52 @@ export default function PostDetailPage() {
     });
   };
 
+  const handleShare = () => {
+    const url = window.location.href;
+    const title = post.title;
+
+    // 카카오톡 공유 (Kakao SDK 사용)
+    if (typeof window !== 'undefined' && window.Kakao) {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: title,
+          description: post.content.substring(0, 100) + '...',
+          imageUrl: post.images && post.images.length > 0
+            ? `${window.location.origin}${post.images[0]}`
+            : `${window.location.origin}/og-image.png`,
+          link: {
+            mobileWebUrl: url,
+            webUrl: url,
+          },
+        },
+        buttons: [
+          {
+            title: '자세히 보기',
+            link: {
+              mobileWebUrl: url,
+              webUrl: url,
+            },
+          },
+        ],
+      });
+    } else {
+      // 웹 공유 API 사용 (모바일 브라우저)
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: post.content.substring(0, 100) + '...',
+          url: url,
+        }).catch((err) => console.log('Error sharing:', err));
+      } else {
+        // 클립보드 복사
+        navigator.clipboard.writeText(url).then(() => {
+          alert('링크가 클립보드에 복사되었습니다!');
+        });
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -223,7 +269,29 @@ export default function PostDetailPage() {
               </p>
             </div>
 
-            <div className="border-t pt-4 md:pt-6">
+            {/* 이미지 갤러리 */}
+            {post.images && post.images.length > 0 && (
+              <div className="mb-4 md:mb-6">
+                <div className={`grid gap-3 ${
+                  post.images.length === 1 ? 'grid-cols-1' :
+                  post.images.length === 2 ? 'grid-cols-2' :
+                  'grid-cols-2 md:grid-cols-3'
+                }`}>
+                  {post.images.map((image, index) => (
+                    <div key={index} className="relative group overflow-hidden rounded-lg">
+                      <img
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-48 md:h-64 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                        onClick={() => window.open(image, '_blank')}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t pt-4 md:pt-6 flex flex-wrap items-center gap-3">
               <button
                 onClick={handleLike}
                 className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-all text-sm md:text-base ${
@@ -234,6 +302,16 @@ export default function PostDetailPage() {
               >
                 <span className="text-lg md:text-xl">{liked ? '❤️' : '🤍'}</span>
                 <span>좋아요 {likes}</span>
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-all text-sm md:text-base"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                </svg>
+                <span>공유하기</span>
               </button>
             </div>
           </div>

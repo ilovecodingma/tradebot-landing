@@ -10,9 +10,11 @@ export default function NewPostPage() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    images: [],
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -30,6 +32,57 @@ export default function NewPostPage() {
     } catch (error) {
       router.push('/login');
     }
+  };
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // 최대 5개 이미지 제한
+    if (formData.images.length + files.length > 5) {
+      setError('이미지는 최대 5개까지 업로드할 수 있습니다.');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', file);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || '이미지 업로드에 실패했습니다.');
+        }
+
+        const data = await res.json();
+        return data.url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      setFormData({
+        ...formData,
+        images: [...formData.images, ...uploadedUrls],
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index) => {
+    setFormData({
+      ...formData,
+      images: formData.images.filter((_, i) => i !== index),
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -138,7 +191,7 @@ export default function NewPostPage() {
                 <textarea
                   id="content"
                   required
-                  rows={16}
+                  rows={12}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-y"
                   placeholder="게시글 내용을 입력하세요&#10;&#10;마크다운 형식을 지원합니다."
                   value={formData.content}
@@ -149,6 +202,56 @@ export default function NewPostPage() {
                 <p className="mt-2 text-xs text-gray-500">
                   최소 10자 이상 작성해주세요
                 </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  이미지 첨부 (최대 5개, 각 5MB 이하)
+                </label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-gray-300 rounded-md hover:border-primary-500 cursor-pointer transition-colors">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="text-sm text-gray-600">이미지 선택</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploading || formData.images.length >= 5}
+                      />
+                    </label>
+                    {uploading && (
+                      <span className="text-sm text-gray-500">업로드 중...</span>
+                    )}
+                  </div>
+
+                  {formData.images.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                      {formData.images.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Upload ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md border border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">

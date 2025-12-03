@@ -16,13 +16,7 @@ export async function POST(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 관리자만 이미지 업로드 가능
-    if (decoded.role !== 'admin') {
-      return NextResponse.json(
-        { error: '권한이 없습니다.' },
-        { status: 403 }
-      );
-    }
+    // 로그인한 사용자는 누구나 이미지 업로드 가능
 
     const formData = await request.formData();
     const file = formData.get('file');
@@ -30,6 +24,23 @@ export async function POST(request) {
     if (!file) {
       return NextResponse.json(
         { error: '파일이 없습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: '파일 크기는 5MB를 초과할 수 없습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일 형식 확인
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: '지원하지 않는 파일 형식입니다. (JPG, PNG, GIF, WEBP만 가능)' },
         { status: 400 }
       );
     }

@@ -5,7 +5,15 @@ import clientPromise from '@/app/lib/mongodb';
 
 export async function POST(request) {
   try {
+    console.log('[LOGIN] Request received');
+    console.log('[LOGIN] Environment check:', {
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      hasAdminEmail: !!process.env.ADMIN_EMAIL
+    });
+
     const { email, password } = await request.json();
+    console.log('[LOGIN] Email:', email);
 
     if (!email || !password) {
       return NextResponse.json(
@@ -81,9 +89,11 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[LOGIN] Error:', error);
+    console.error('[LOGIN] Error message:', error.message);
+    console.error('[LOGIN] Error stack:', error.stack);
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { error: '서버 오류가 발생했습니다.', details: error.message },
       { status: 500 }
     );
   }
