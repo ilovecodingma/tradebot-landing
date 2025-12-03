@@ -5,7 +5,13 @@
       "Bash(npm run build:*)",
       "Bash(powershell:*)",
       "Bash(taskkill:*)",
-      "Bash(cmd /c \"rd /s /q .next 2>nul & npm run build\")"
+      "Bash(cmd /c \"rd /s /q .next 2>nul & npm run build\")",
+      "Bash(\"app\\api\\community\\posts\\[id]\\comments\\route.js\")",
+      "Bash(\"app/api/community/posts/[id]/comments/route.js\")",
+      "Bash(node migrate-magazines.js:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(cmd /c \"rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\ideas && rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\api\\ideas\")"
     ],
     "deny": [],
     "ask": []

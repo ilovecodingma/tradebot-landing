@@ -10,6 +10,7 @@ export default function NewPostPage() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    category: 'general',
     images: [],
   });
   const [error, setError] = useState('');
@@ -161,6 +162,26 @@ export default function NewPostPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
+                >
+                  카테고리 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="category"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                >
+                  <option value="general">일반글</option>
+                  <option value="trading">트레이딩 아이디어</option>
+                </select>
+              </div>
+
               <div>
                 <label
                   htmlFor="title"

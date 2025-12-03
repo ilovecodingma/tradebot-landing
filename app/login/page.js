@@ -99,14 +99,35 @@ export default function LoginPage() {
             >
               {loading ? '로그인 중...' : '로그인'}
             </button>
-
-            <div className="text-center text-sm">
-              <span className="text-gray-600">계정이 없으신가요? </span>
-              <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
-                회원가입
-              </Link>
-            </div>
           </form>
+
+          {/* 구분선 */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">또는</span>
+            </div>
+          </div>
+
+          {/* 카카오 로그인 */}
+          <a
+            href="/api/auth/kakao"
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] font-medium rounded-md transition-colors"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3C6.477 3 2 6.477 2 10.75c0 2.764 1.807 5.163 4.5 6.5-.188.81-.75 3.25-.863 3.75-.134.61.234.602.492.438.188-.12 3.053-2.077 3.98-2.707C10.655 18.895 11.31 19 12 19c5.523 0 10-3.477 10-7.75S17.523 3 12 3z"/>
+            </svg>
+            카카오 로그인
+          </a>
+
+          <div className="text-center text-sm mt-6">
+            <span className="text-gray-600">계정이 없으신가요? </span>
+            <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
+              회원가입
+            </Link>
+          </div>
         </div>
       </div>
     </div>

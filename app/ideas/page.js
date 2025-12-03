@@ -4,18 +4,19 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function CommunityPage() {
+export default function IdeasPage() {
   const router = useRouter();
-  const [posts, setPosts] = useState([]);
+  const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     fetchUser();
-    fetchPosts();
-  }, [page]);
+    fetchIdeas();
+  }, [page, activeTab]);
 
   const fetchUser = async () => {
     try {
@@ -29,27 +30,17 @@ export default function CommunityPage() {
     }
   };
 
-  const fetchPosts = async () => {
+  const fetchIdeas = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/community/posts?page=${page}&limit=10&category=${categoryTab}`);
+      const res = await fetch(`/api/ideas?page=${page}&limit=12&filter=${activeTab}`);
       const data = await res.json();
-      setPosts(data.posts || []);
+      setIdeas(data.ideas || []);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
-      console.error('Failed to fetch posts:', error);
+      console.error('Failed to fetch ideas:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-      router.refresh();
-    } catch (error) {
-      console.error('Failed to logout:', error);
     }
   };
 
@@ -79,103 +70,71 @@ export default function CommunityPage() {
     return hours < 24;
   };
 
-  const [activeTab, setActiveTab] = useState('all');
-  const [categoryTab, setCategoryTab] = useState('all');
-
-  useEffect(() => {
-    fetchPosts();
-  }, [categoryTab]);
-
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">커뮤니티</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">트레이딩 아이디어</h1>
+            <p className="text-gray-600">전문 트레이더들의 차트 분석과 전략을 공유하세요</p>
+          </div>
 
-            {/* Category Tabs */}
-            <div className="mb-4">
-              <div className="flex gap-2 overflow-x-auto">
-                <button
-                  onClick={() => { setCategoryTab('all'); setPage(1); }}
-                  className={`px-5 py-2.5 rounded-md font-medium transition-colors whitespace-nowrap ${
-                    categoryTab === 'all'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  전체
-                </button>
-                <button
-                  onClick={() => { setCategoryTab('general'); setPage(1); }}
-                  className={`px-5 py-2.5 rounded-md font-medium transition-colors whitespace-nowrap ${
-                    categoryTab === 'general'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  일반글
-                </button>
-                <button
-                  onClick={() => { setCategoryTab('trading'); setPage(1); }}
-                  className={`px-5 py-2.5 rounded-md font-medium transition-colors whitespace-nowrap ${
-                    categoryTab === 'trading'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  트레이딩 아이디어
-                </button>
-              </div>
+          {/* Tabs & Actions */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === 'all'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setActiveTab('long')}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === 'long'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                롱 포지션
+              </button>
+              <button
+                onClick={() => setActiveTab('short')}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === 'short'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                숏 포지션
+              </button>
             </div>
 
-            {/* Tabs & Actions */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                    activeTab === 'all'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+            <div className="flex items-center gap-3">
+              {user && (
+                <Link
+                  href="/ideas/new"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium transition-colors"
                 >
-                  최신순
-                </button>
-                <button
-                  onClick={() => setActiveTab('popular')}
-                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                    activeTab === 'popular'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  아이디어 공유
+                </Link>
+              )}
+              {!user && (
+                <Link
+                  href="/login"
+                  className="px-6 py-2.5 bg-white text-gray-700 rounded-md hover:bg-gray-50 font-medium border border-gray-300"
                 >
-                  인기순
-                </button>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {user && (
-                  <Link
-                    href="/community/new"
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    아이디어 공유
-                  </Link>
-                )}
-                {!user && (
-                  <Link
-                    href="/login"
-                    className="px-6 py-2.5 bg-white text-gray-700 rounded-md hover:bg-gray-50 font-medium border border-gray-300"
-                  >
-                    로그인
-                  </Link>
-                )}
-              </div>
+                  로그인
+                </Link>
+              )}
             </div>
           </div>
 
@@ -183,72 +142,93 @@ export default function CommunityPage() {
             <div className="text-center py-12">
               <div className="text-gray-600">로딩 중...</div>
             </div>
-          ) : posts.length === 0 ? (
+          ) : ideas.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-600 mb-4">아직 게시글이 없습니다.</p>
+              <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <p className="text-gray-600 mb-4">아직 공유된 아이디어가 없습니다.</p>
               {user && (
                 <Link
-                  href="/community/new"
+                  href="/ideas/new"
                   className="inline-block btn-primary bg-primary-600 text-white hover:bg-primary-700 px-6 py-2 text-sm"
                 >
-                  첫 게시글 작성하기
+                  첫 아이디어 공유하기
                 </Link>
               )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {posts.map((post) => (
+              {ideas.map((idea) => (
                 <Link
-                  key={post._id}
-                  href={`/community/${post._id}`}
+                  key={idea._id}
+                  href={`/ideas/${idea._id}`}
                   className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                 >
-                  {/* Thumbnail */}
-                  <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 overflow-hidden">
-                    {post.images && post.images.length > 0 ? (
+                  {/* Chart Thumbnail */}
+                  <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                    {idea.chartImage ? (
                       <img
-                        src={post.images[0]}
-                        alt={post.title}
+                        src={idea.chartImage}
+                        alt={idea.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-16 h-16 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                         </svg>
                       </div>
                     )}
-                    {isNew(post.createdAt) && (
+                    {isNew(idea.createdAt) && (
                       <span className="absolute top-3 right-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded shadow-lg">
                         NEW
+                      </span>
+                    )}
+                    {/* Position Badge */}
+                    {idea.position && (
+                      <span className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold rounded shadow-lg ${
+                        idea.position === 'long'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-red-500 text-white'
+                      }`}>
+                        {idea.position === 'long' ? '롱' : '숏'}
                       </span>
                     )}
                   </div>
 
                   {/* Content */}
                   <div className="p-4">
+                    {/* Symbol */}
+                    {idea.symbol && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-gray-500 uppercase">{idea.symbol}</span>
+                        {idea.timeframe && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-xs text-gray-500">{idea.timeframe}</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+
                     {/* Title */}
                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
-                      {post.title}
-                      {(post.commentCount || post.comments?.length || 0) > 0 && (
-                        <span className="ml-2 text-primary-600 text-sm">
-                          [{post.commentCount || post.comments?.length || 0}]
-                        </span>
-                      )}
+                      {idea.title}
                     </h3>
 
                     {/* Excerpt */}
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {post.content}
+                      {idea.description}
                     </p>
 
                     {/* Author */}
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        {post.authorName[0]}
+                        {idea.authorName[0]}
                       </div>
                       <span className="text-sm text-gray-700 font-medium hover:text-primary-600">
-                        {post.authorName}
+                        {idea.authorName}
                       </span>
                     </div>
 
@@ -260,17 +240,17 @@ export default function CommunityPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
-                          {post.views || 0}
+                          {idea.views || 0}
                         </span>
                         <span className="flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
-                          {post.likes || 0}
+                          {idea.likes || 0}
                         </span>
                       </div>
                       <span className="text-xs text-gray-400">
-                        {formatDate(post.createdAt)}
+                        {formatDate(idea.createdAt)}
                       </span>
                     </div>
                   </div>

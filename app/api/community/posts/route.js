@@ -8,20 +8,27 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const category = searchParams.get('category') || 'all';
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
     const db = client.db('tradebot');
     const posts = db.collection('posts');
 
+    // Build query based on category
+    const query = {};
+    if (category !== 'all') {
+      query.category = category;
+    }
+
     const [postsList, total] = await Promise.all([
       posts
-        .find({})
+        .find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .toArray(),
-      posts.countDocuments({})
+      posts.countDocuments(query)
     ]);
 
     return NextResponse.json({
@@ -51,7 +58,7 @@ export async function POST(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { title, content } = await request.json();
+    const { title, content, category, images } = await request.json();
 
     if (!title || !content) {
       return NextResponse.json(
@@ -67,6 +74,8 @@ export async function POST(request) {
     const result = await posts.insertOne({
       title,
       content,
+      category: category || 'general',
+      images: images || [],
       authorId: new ObjectId(decoded.userId),
       authorName: decoded.name,
       authorEmail: decoded.email,
