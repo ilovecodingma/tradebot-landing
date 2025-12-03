@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(request, { params }) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
 
     const client = await clientPromise;
     const db = client.db('tradebot');

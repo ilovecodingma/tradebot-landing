@@ -79,39 +79,62 @@ export default function CommunityPage() {
     return hours < 24;
   };
 
+  const [activeTab, setActiveTab] = useState('all');
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-4 md:py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">커뮤니티</h1>
-            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              {user ? (
-                <>
-                  <span className="hidden sm:inline text-gray-700 text-sm md:text-base">안녕하세요, {user.name}님</span>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">커뮤니티 아이디어</h1>
+
+            {/* Tabs & Actions */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    activeTab === 'all'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  전체
+                </button>
+                <button
+                  onClick={() => setActiveTab('popular')}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    activeTab === 'popular'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  인기글
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {user && (
                   <Link
                     href="/community/new"
-                    className="flex-1 sm:flex-none text-center btn-primary bg-primary-600 text-white hover:bg-primary-700 px-4 md:px-6 py-2 text-sm"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium transition-colors"
                   >
-                    글쓰기
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    아이디어 공유
                   </Link>
-                </>
-              ) : (
-                <>
+                )}
+                {!user && (
                   <Link
                     href="/login"
-                    className="text-gray-600 hover:text-gray-900 text-sm md:text-base"
+                    className="px-6 py-2.5 bg-white text-gray-700 rounded-md hover:bg-gray-50 font-medium border border-gray-300"
                   >
                     로그인
                   </Link>
-                  <Link
-                    href="/register"
-                    className="flex-1 sm:flex-none text-center btn-primary bg-primary-600 text-white hover:bg-primary-700 px-4 md:px-6 py-2 text-sm"
-                  >
-                    회원가입
-                  </Link>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
@@ -132,116 +155,87 @@ export default function CommunityPage() {
               )}
             </div>
           ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-100 border-b-2 border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">제목</th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-28">작성자</th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-20">조회</th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-20">댓글</th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-20">추천</th>
-                      <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-24">날짜</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {posts.map((post, index) => (
-                      <tr
-                        key={post._id}
-                        className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
-                      >
-                        <td className="px-6 py-4">
-                          <Link
-                            href={`/community/${post._id}`}
-                            className="flex items-center gap-2 group"
-                          >
-                            <span className="text-base text-gray-900 group-hover:text-primary-600 group-hover:underline font-medium">
-                              {post.title}
-                            </span>
-                            {isNew(post.createdAt) && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white">
-                                NEW
-                              </span>
-                            )}
-                            {(post.commentCount || post.comments?.length || 0) > 0 && (
-                              <span className="text-primary-600 text-sm font-medium">
-                                [{post.commentCount || post.comments?.length || 0}]
-                              </span>
-                            )}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <Link
-                            href={`/profile/${post.authorId}`}
-                            className="text-sm text-gray-700 hover:text-primary-600 hover:underline font-medium"
-                          >
-                            {post.authorName}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm text-gray-600">
-                          {post.views || 0}
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm text-gray-600">
-                          {post.commentCount || post.comments?.length || 0}
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm text-gray-600">
-                          {post.likes || 0}
-                        </td>
-                        <td className="px-4 py-4 text-center text-xs text-gray-500">
-                          {formatDate(post.createdAt)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {posts.map((post) => (
+                <Link
+                  key={post._id}
+                  href={`/community/${post._id}`}
+                  className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  {/* Thumbnail */}
+                  <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 overflow-hidden">
+                    {post.images && post.images.length > 0 ? (
+                      <img
+                        src={post.images[0]}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <svg className="w-16 h-16 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                      </div>
+                    )}
+                    {isNew(post.createdAt) && (
+                      <span className="absolute top-3 right-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded shadow-lg">
+                        NEW
+                      </span>
+                    )}
+                  </div>
 
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {posts.map((post) => (
-                  <div
-                    key={post._id}
-                    className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
-                  >
-                    <Link href={`/community/${post._id}`}>
-                      <div className="flex items-start gap-2 mb-2">
-                        <h2 className="text-base font-bold text-gray-900 flex-1 hover:text-primary-600">
-                          {post.title}
-                        </h2>
-                        {isNew(post.createdAt) && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white shrink-0">
-                            NEW
-                          </span>
-                        )}
+                  {/* Content */}
+                  <div className="p-4">
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                      {post.title}
+                      {(post.commentCount || post.comments?.length || 0) > 0 && (
+                        <span className="ml-2 text-primary-600 text-sm">
+                          [{post.commentCount || post.comments?.length || 0}]
+                        </span>
+                      )}
+                    </h3>
+
+                    {/* Excerpt */}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {post.content}
+                    </p>
+
+                    {/* Author */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                        {post.authorName[0]}
                       </div>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {post.content}
-                      </p>
-                    </Link>
-                    <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100">
-                      <Link
-                        href={`/profile/${post.authorId}`}
-                        className="font-medium hover:text-primary-600"
-                      >
+                      <span className="text-sm text-gray-700 font-medium hover:text-primary-600">
                         {post.authorName}
-                      </Link>
-                      <div className="flex items-center gap-3">
-                        <span>👁 {post.views || 0}</span>
-                        <span>💬 {post.commentCount || post.comments?.length || 0}</span>
-                        <span>❤️ {post.likes || 0}</span>
-                      </div>
+                      </span>
                     </div>
-                    <div className="text-xs text-gray-400 mt-1 text-right">
-                      {formatDate(post.createdAt)}
+
+                    {/* Stats & Date */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          {post.views || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          {post.likes || 0}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {formatDate(post.createdAt)}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </>
+                </Link>
+              ))}
+            </div>
           )}
 
           {totalPages > 1 && (
