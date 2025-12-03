@@ -14,6 +14,8 @@ export default function BacktestPage() {
   const [ohlcvData, setOhlcvData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 백테스트 결과
   const [backtestResult, setBacktestResult] = useState(null);
@@ -93,6 +95,30 @@ export default function BacktestPage() {
     setStrategy(prev => ({ ...prev, [key]: value }));
   }, []);
 
+  // 검색 필터링된 마켓 목록
+  const filteredMarkets = useMemo(() => {
+    if (!searchQuery.trim()) return markets;
+
+    const query = searchQuery.toLowerCase();
+    return markets.filter(m =>
+      m.korean_name.toLowerCase().includes(query) ||
+      m.english_name.toLowerCase().includes(query) ||
+      m.market.toLowerCase().includes(query)
+    );
+  }, [markets, searchQuery]);
+
+  // 선택된 마켓 정보
+  const selectedMarketInfo = useMemo(() => {
+    return markets.find(m => m.market === selectedMarket);
+  }, [markets, selectedMarket]);
+
+  // 마켓 선택 핸들러
+  const handleSelectMarket = (market) => {
+    setSelectedMarket(market);
+    setIsDropdownOpen(false);
+    setSearchQuery('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900 to-gray-900 text-white pt-20 pb-10">
       <div className="container mx-auto px-4">
@@ -108,19 +134,91 @@ export default function BacktestPage() {
               <h2 className="text-2xl font-semibold mb-4 text-purple-300">데이터 설정</h2>
 
               <div className="space-y-4">
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium mb-2">마켓</label>
-                  <select
-                    value={selectedMarket}
-                    onChange={(e) => setSelectedMarket(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+
+                  {/* 선택된 마켓 표시 버튼 */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500 flex items-center justify-between hover:bg-gray-600 transition-colors"
                   >
-                    {markets.map(m => (
-                      <option key={m.market} value={m.market}>
-                        {m.korean_name} ({m.market})
-                      </option>
-                    ))}
-                  </select>
+                    <span>
+                      {selectedMarketInfo ? `${selectedMarketInfo.korean_name} (${selectedMarketInfo.market})` : selectedMarket}
+                    </span>
+                    <svg
+                      className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* 드롭다운 메뉴 */}
+                  {isDropdownOpen && (
+                    <>
+                      {/* 배경 오버레이 */}
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+
+                      {/* 드롭다운 컨텐츠 */}
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-20 max-h-96 overflow-hidden flex flex-col">
+                        {/* 검색 입력 */}
+                        <div className="p-3 border-b border-gray-600 sticky top-0 bg-gray-700">
+                          <div className="relative">
+                            <svg
+                              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="코인 검색... (한글, 영문, 심볼)"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 마켓 목록 */}
+                        <div className="overflow-y-auto">
+                          {filteredMarkets.length > 0 ? (
+                            filteredMarkets.map(m => (
+                              <button
+                                key={m.market}
+                                type="button"
+                                onClick={() => handleSelectMarket(m.market)}
+                                className={`w-full text-left px-4 py-2.5 hover:bg-gray-600 transition-colors border-b border-gray-600 last:border-0 ${
+                                  m.market === selectedMarket ? 'bg-purple-600 bg-opacity-30' : ''
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="font-medium text-white">{m.korean_name}</div>
+                                    <div className="text-xs text-gray-400">{m.english_name}</div>
+                                  </div>
+                                  <div className="text-sm text-gray-400">{m.market.replace('KRW-', '')}</div>
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="p-4 text-center text-gray-400 text-sm">
+                              검색 결과가 없습니다
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div>
