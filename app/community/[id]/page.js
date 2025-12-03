@@ -237,60 +237,92 @@ export default function PostDetailPage() {
   const isAuthor = user && user._id === post.authorId.toString();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-4 md:mb-6">
+    <div className="min-h-screen bg-white">
+      {/* 상단 네비게이션 */}
+      <div className="border-b border-gray-200 bg-white sticky top-16 z-10">
+        <div className="container mx-auto px-4">
+          <div className="py-3">
             <Link
               href="/community"
-              className="text-primary-600 hover:text-primary-700 text-sm md:text-base"
+              className="inline-flex items-center text-sm text-gray-600 hover:text-primary-600 font-medium"
             >
-              ← 커뮤니티로 돌아가기
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              커뮤니티
             </Link>
           </div>
+        </div>
+      </div>
 
-          <div className="bg-white rounded-lg shadow-md p-4 md:p-8 mb-4 md:mb-6">
-            <div className="mb-4 md:mb-6">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
-                {post.title}
-              </h1>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs md:text-sm text-gray-500">
-                <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                  <span>작성자: {post.authorName}</span>
-                  <span className="hidden sm:inline">{formatDate(post.createdAt)}</span>
-                  <span>👁 조회 {post.views || 0}</span>
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto">
+          {/* 헤더 영역 */}
+          <div className="mb-6">
+            {/* 제목 */}
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              {post.title}
+            </h1>
+
+            {/* 작성자 & 메타 정보 */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                {/* 작성자 아바타 */}
+                <Link href={`/profile/${post.authorId}`}>
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-lg font-bold cursor-pointer hover:shadow-lg transition-shadow">
+                    {post.authorName[0]}
+                  </div>
+                </Link>
+
+                <div>
+                  <Link
+                    href={`/profile/${post.authorId}`}
+                    className="font-semibold text-gray-900 hover:text-primary-600 text-base"
+                  >
+                    {post.authorName}
+                  </Link>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>{formatDate(post.createdAt)}</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {post.views || 0}
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              {/* 액션 버튼들 */}
+              <div className="flex items-center gap-2">
                 {isAuthor && (
                   <button
                     onClick={handleDeletePost}
-                    className="text-red-600 hover:text-red-700 text-sm"
+                    className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
                     삭제
                   </button>
                 )}
               </div>
             </div>
+          </div>
 
-            <div className="prose max-w-none mb-4 md:mb-6">
-              <p className="text-sm md:text-base text-gray-700 whitespace-pre-wrap">
-                {post.content}
-              </p>
-            </div>
-
+          {/* 메인 컨텐츠 */}
+          <div className="border-b border-gray-200 pb-8 mb-8">
             {/* 이미지 갤러리 */}
             {post.images && post.images.length > 0 && (
-              <div className="mb-4 md:mb-6">
-                <div className={`grid gap-3 ${
-                  post.images.length === 1 ? 'grid-cols-1' :
-                  post.images.length === 2 ? 'grid-cols-2' :
-                  'grid-cols-2 md:grid-cols-3'
+              <div className="mb-6">
+                <div className={`${
+                  post.images.length === 1 ? 'max-w-3xl mx-auto' : 'grid gap-4 grid-cols-1 md:grid-cols-2'
                 }`}>
                   {post.images.map((image, index) => (
-                    <div key={index} className="relative group overflow-hidden rounded-lg">
+                    <div key={index} className="relative group overflow-hidden rounded-lg border border-gray-200">
                       <img
                         src={image}
                         alt={`Image ${index + 1}`}
-                        className="w-full h-48 md:h-64 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                        className="w-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
                         onClick={() => window.open(image, '_blank')}
                       />
                     </div>
@@ -299,91 +331,125 @@ export default function PostDetailPage() {
               </div>
             )}
 
-            <div className="border-t pt-4 md:pt-6 flex flex-wrap items-center gap-3">
+            {/* 본문 */}
+            <div className="prose prose-lg max-w-none mb-6">
+              <div className="text-base leading-relaxed text-gray-800 whitespace-pre-wrap">
+                {post.content}
+              </div>
+            </div>
+
+            {/* 인터랙션 버튼 */}
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-all text-sm md:text-base ${
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-sm ${
                   liked
-                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <span className="text-lg md:text-xl">{liked ? '❤️' : '🤍'}</span>
-                <span>좋아요 {likes}</span>
+                <svg className="w-5 h-5" fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span>{likes}</span>
               </button>
 
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-all text-sm md:text-base"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
-                <span>공유하기</span>
+                <span>공유</span>
               </button>
+
+              <div className="flex-1"></div>
+
+              <div className="text-sm text-gray-500">
+                댓글 {post.comments?.length || 0}개
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-4 md:p-8">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
-              댓글 {post.comments?.length || 0}개
+          {/* 댓글 섹션 */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
+              댓글 {post.comments?.length || 0}
             </h2>
 
             {user ? (
-              <form onSubmit={handleSubmitComment} className="mb-6">
-                <textarea
-                  className="w-full px-3 md:px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm md:text-base"
-                  rows={3}
-                  placeholder="댓글을 입력하세요"
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.target.value)}
-                />
-                <div className="mt-2 flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={submittingComment || !commentContent.trim()}
-                    className="bg-primary-600 text-white px-4 md:px-6 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm md:text-base"
-                  >
-                    {submittingComment ? '작성 중...' : '댓글 작성'}
-                  </button>
+              <form onSubmit={handleSubmitComment} className="mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    {user.name[0]}
+                  </div>
+                  <div className="flex-1">
+                    <textarea
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm"
+                      rows={3}
+                      placeholder="댓글을 남겨보세요..."
+                      value={commentContent}
+                      onChange={(e) => setCommentContent(e.target.value)}
+                    />
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={submittingComment || !commentContent.trim()}
+                        className="px-5 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                      >
+                        {submittingComment ? '작성 중...' : '댓글 작성'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </form>
             ) : (
-              <div className="mb-6 p-4 bg-gray-50 rounded-md text-center">
-                <p className="text-sm md:text-base text-gray-600 mb-2">댓글을 작성하려면 로그인이 필요합니다.</p>
+              <div className="mb-8 p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
+                <p className="text-gray-600 mb-3">댓글을 작성하려면 로그인이 필요합니다.</p>
                 <Link
                   href="/login"
-                  className="text-primary-600 hover:text-primary-700 text-sm md:text-base"
+                  className="inline-block px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium text-sm transition-colors"
                 >
                   로그인하기
                 </Link>
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {post.comments && post.comments.length > 0 ? (
                 post.comments.map((comment) => (
                   <div
                     key={comment._id}
-                    className="border-t border-gray-200 pt-4"
+                    className="flex items-start gap-3 pb-6 border-b border-gray-100 last:border-0"
                   >
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-1 sm:gap-0 mb-2">
-                      <span className="font-medium text-sm md:text-base text-gray-900">
-                        {comment.authorName}
-                      </span>
-                      <span className="text-xs md:text-sm text-gray-500">
-                        {formatDate(comment.createdAt)}
-                      </span>
+                    <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      {comment.authorName[0]}
                     </div>
-                    <p className="text-sm md:text-base text-gray-700 whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-gray-900 text-sm">
+                          {comment.authorName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {comment.content}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-4 text-sm md:text-base">
-                  아직 댓글이 없습니다.
-                </p>
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p className="text-gray-500 text-sm">
+                    첫 댓글을 남겨보세요!
+                  </p>
+                </div>
               )}
             </div>
           </div>
