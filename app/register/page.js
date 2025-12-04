@@ -22,6 +22,7 @@ function RegisterForm() {
     const kakaoId = searchParams.get('kakaoId');
     const email = searchParams.get('email');
     const name = searchParams.get('name');
+    const noEmail = searchParams.get('noEmail');
     const errorParam = searchParams.get('error');
     const message = searchParams.get('message');
 
@@ -29,11 +30,11 @@ function RegisterForm() {
       setError(decodeURIComponent(message));
     }
 
-    if (kakaoId && email) {
+    if (kakaoId) {
       setIsKakaoSignup(true);
       setFormData({
         name: name || '',
-        email: decodeURIComponent(email),
+        email: email ? decodeURIComponent(email) : '',
         password: '',
         confirmPassword: '',
         kakaoId: kakaoId,
@@ -99,7 +100,7 @@ function RegisterForm() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {isKakaoSignup ? (
-              '비밀번호를 설정하여 회원가입을 완료하세요'
+              formData.email ? '비밀번호를 설정하여 회원가입을 완료하세요' : '이메일과 비밀번호를 설정하여 회원가입을 완료하세요'
             ) : (
               <>
                 또는{' '}
@@ -148,9 +149,9 @@ function RegisterForm() {
                 name="email"
                 type="email"
                 required
-                disabled={isKakaoSignup}
+                disabled={isKakaoSignup && formData.email}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="이메일"
+                placeholder={isKakaoSignup && !formData.email ? '카카오 계정에 이메일이 없습니다. 이메일을 입력하세요' : '이메일'}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })

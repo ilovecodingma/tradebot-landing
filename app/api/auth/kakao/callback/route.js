@@ -59,35 +59,32 @@ export async function GET(request) {
     const email = kakaoUser.kakao_account?.email;
     const name = kakaoUser.kakao_account?.profile?.nickname || '카카오 사용자';
 
-    // 이메일이 없는 경우 (카카오 계정에서 이메일 제공 안 함)
-    if (!email) {
-      return NextResponse.redirect(
-        new URL('/register?error=no_email&message=카카오 계정에 이메일이 없습니다. 일반 회원가입을 이용해주세요.', request.url)
-      );
-    }
-
     // 카카오 ID로 먼저 찾기 (이미 카카오로 가입한 경우)
     let user = await usersCollection.findOne({ kakaoId });
 
     if (!user) {
-      // 이메일로 기존 회원 찾기
-      const existingUser = await usersCollection.findOne({ email });
+      // 이메일이 있는 경우에만 기존 회원 확인
+      if (email) {
+        const existingUser = await usersCollection.findOne({ email });
 
-      if (existingUser) {
-        // 기존 회원이 있으면 계정 연동 확인 페이지로 리다이렉트
-        const maskedEmail = email.replace(/(.{3})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(b.length) + c);
-        return NextResponse.redirect(
-          new URL(
-            `/link-account?email=${encodeURIComponent(email)}&maskedEmail=${encodeURIComponent(maskedEmail)}&createdAt=${existingUser.createdAt?.toISOString() || ''}&kakaoId=${kakaoId}&name=${encodeURIComponent(name)}`,
-            request.url
-          )
-        );
-      } else {
-        // 기존 회원이 없으면 회원가입 페이지로 리다이렉트
-        return NextResponse.redirect(
-          new URL(`/register?kakaoId=${kakaoId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`, request.url)
-        );
+        if (existingUser) {
+          // 기존 회원이 있으면 계정 연동 확인 페이지로 리다이렉트
+          const maskedEmail = email.replace(/(.{3})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(b.length) + c);
+          return NextResponse.redirect(
+            new URL(
+              `/link-account?email=${encodeURIComponent(email)}&maskedEmail=${encodeURIComponent(maskedEmail)}&createdAt=${existingUser.createdAt?.toISOString() || ''}&kakaoId=${kakaoId}&name=${encodeURIComponent(name)}`,
+              request.url
+            )
+          );
+        }
       }
+
+      // 이메일이 없거나 기존 회원이 없으면 회원가입 페이지로 리다이렉트
+      const registerUrl = email
+        ? `/register?kakaoId=${kakaoId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`
+        : `/register?kakaoId=${kakaoId}&name=${encodeURIComponent(name)}&noEmail=true`;
+
+      return NextResponse.redirect(new URL(registerUrl, request.url));
     }
 
     // 4. JWT 토큰 생성
