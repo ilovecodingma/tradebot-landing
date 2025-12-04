@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 import clientPromise from '@/app/lib/mongodb';
+import jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
@@ -13,8 +13,8 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/login?error=no_code', request.url));
     }
 
-    const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
-    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tradebot-landing-f60a28ec7-damdam1.vercel.app/'}/api/auth/kakao/callback`;
+    const KAKAO_CLIENT_ID = process.env.KAKAO_REST_API_KEY;
+    const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://tradebot-landing-six.vercel.app'}/api/auth/kakao/callback`;
 
     // 1. 토큰 받기
     const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
