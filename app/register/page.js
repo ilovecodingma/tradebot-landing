@@ -1,19 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    kakaoId: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isKakaoSignup, setIsKakaoSignup] = useState(false);
+
+  useEffect(() => {
+    const kakaoId = searchParams.get('kakaoId');
+    const email = searchParams.get('email');
+    const name = searchParams.get('name');
+    const errorParam = searchParams.get('error');
+    const message = searchParams.get('message');
+
+    if (errorParam && message) {
+      setError(decodeURIComponent(message));
+    }
+
+    if (kakaoId && email) {
+      setIsKakaoSignup(true);
+      setFormData({
+        name: name || '',
+        email: decodeURIComponent(email),
+        password: '',
+        confirmPassword: '',
+        kakaoId: kakaoId,
+      });
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +67,7 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          kakaoId: formData.kakaoId || undefined,
         }),
       });
 
@@ -50,7 +77,11 @@ export default function RegisterPage() {
         throw new Error(data.error || '회원가입에 실패했습니다.');
       }
 
-      router.push('/login');
+      if (isKakaoSignup) {
+        router.push('/community');
+      } else {
+        router.push('/login');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,16 +94,22 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            회원가입
+            {isKakaoSignup ? '카카오 회원가입' : '회원가입'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            또는{' '}
-            <Link
-              href="/login"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              로그인하기
-            </Link>
+            {isKakaoSignup ? (
+              '비밀번호를 설정하여 회원가입을 완료하세요'
+            ) : (
+              <>
+                또는{' '}
+                <Link
+                  href="/login"
+                  className="font-medium text-primary-600 hover:text-primary-500"
+                >
+                  로그인하기
+                </Link>
+              </>
+            )}
           </p>
         </div>
 
@@ -110,7 +147,8 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                disabled={isKakaoSignup}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="이메일"
                 value={formData.email}
                 onChange={(e) =>

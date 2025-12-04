@@ -50,38 +50,47 @@ export async function GET(request) {
 
     const kakaoUser = await userResponse.json();
 
-    // 3. MongoDB에서 사용자 찾거나 생성
+    // 3. MongoDB에서 사용자 확인
     const client = await clientPromise;
-    const db = client.db('trading-bot');
+    const db = client.db('tradebot');
     const usersCollection = db.collection('users');
 
     const kakaoId = String(kakaoUser.id);
-    const email = kakaoUser.kakao_account?.email || `kakao_${kakaoId}@kakao.com`;
+    const email = kakaoUser.kakao_account?.email;
     const name = kakaoUser.kakao_account?.profile?.nickname || '카카오 사용자';
 
+    // 이메일이 없는 경우 (카카오 계정에서 이메일 제공 안 함)
+    if (!email) {
+      return NextResponse.redirect(
+        new URL('/register?error=no_email&message=카카오 계정에 이메일이 없습니다. 일반 회원가입을 이용해주세요.', request.url)
+      );
+    }
+
+    // 카카오 ID로 먼저 찾기 (이미 카카오로 가입한 경우)
     let user = await usersCollection.findOne({ kakaoId });
 
     if (!user) {
-      // 새 사용자 생성
-      const result = await usersCollection.insertOne({
-        kakaoId,
-        email,
-        name,
-        username: name,
-        provider: 'kakao',
-        createdAt: new Date(),
-        role: 'user',
-      });
+      // 이메일로 기존 회원 찾기
+      const existingUser = await usersCollection.findOne({ email });
 
-      user = {
-        _id: result.insertedId,
-        kakaoId,
-        email,
-        name,
-        username: name,
-        provider: 'kakao',
-        role: 'user',
-      };
+      if (existingUser) {
+        // 기존 회원이 있으면 카카오 연동
+        await usersCollection.updateOne(
+          { email },
+          {
+            $set: {
+              kakaoId,
+              kakaoLinkedAt: new Date(),
+            },
+          }
+        );
+        user = await usersCollection.findOne({ email });
+      } else {
+        // 기존 회원이 없으면 회원가입 페이지로 리다이렉트
+        return NextResponse.redirect(
+          new URL(`/register?kakaoId=${kakaoId}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`, request.url)
+        );
+      }
     }
 
     // 4. JWT 토큰 생성
