@@ -74,17 +74,14 @@ export async function GET(request) {
       const existingUser = await usersCollection.findOne({ email });
 
       if (existingUser) {
-        // 기존 회원이 있으면 카카오 연동
-        await usersCollection.updateOne(
-          { email },
-          {
-            $set: {
-              kakaoId,
-              kakaoLinkedAt: new Date(),
-            },
-          }
+        // 기존 회원이 있으면 계정 연동 확인 페이지로 리다이렉트
+        const maskedEmail = email.replace(/(.{3})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(b.length) + c);
+        return NextResponse.redirect(
+          new URL(
+            `/link-account?email=${encodeURIComponent(email)}&maskedEmail=${encodeURIComponent(maskedEmail)}&createdAt=${existingUser.createdAt?.toISOString() || ''}&kakaoId=${kakaoId}&name=${encodeURIComponent(name)}`,
+            request.url
+          )
         );
-        user = await usersCollection.findOne({ email });
       } else {
         // 기존 회원이 없으면 회원가입 페이지로 리다이렉트
         return NextResponse.redirect(
