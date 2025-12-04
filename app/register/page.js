@@ -79,6 +79,7 @@ function RegisterForm() {
 
       if (isKakaoSignup) {
         router.push('/community');
+        router.refresh();
       } else {
         router.push('/login');
       }
