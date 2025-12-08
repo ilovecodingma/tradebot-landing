@@ -25,9 +25,49 @@ export default function NewPostPage() {
   const [uploading, setUploading] = useState(false);
   const [showChartModal, setShowChartModal] = useState(false);
   const [chartConfig, setChartConfig] = useState({
-    symbol: 'BINANCE:BTCUSDT',
+    exchange: 'BINANCE',
+    symbol: 'BTCUSDT',
     interval: 'D',
   });
+  const [symbolSearch, setSymbolSearch] = useState('');
+
+  // 인기 심볼 목록
+  const popularSymbols = {
+    BINANCE: [
+      { name: 'BTC/USDT', symbol: 'BTCUSDT', label: '비트코인' },
+      { name: 'ETH/USDT', symbol: 'ETHUSDT', label: '이더리움' },
+      { name: 'XRP/USDT', symbol: 'XRPUSDT', label: '리플' },
+      { name: 'SOL/USDT', symbol: 'SOLUSDT', label: '솔라나' },
+      { name: 'ADA/USDT', symbol: 'ADAUSDT', label: '에이다' },
+      { name: 'DOGE/USDT', symbol: 'DOGEUSDT', label: '도지코인' },
+      { name: 'MATIC/USDT', symbol: 'MATICUSDT', label: '폴리곤' },
+      { name: 'DOT/USDT', symbol: 'DOTUSDT', label: '폴카닷' },
+    ],
+    UPBIT: [
+      { name: 'BTC/KRW', symbol: 'BTCKRW', label: '비트코인' },
+      { name: 'ETH/KRW', symbol: 'ETHKRW', label: '이더리움' },
+      { name: 'XRP/KRW', symbol: 'XRPKRW', label: '리플' },
+      { name: 'SOL/KRW', symbol: 'SOLKRW', label: '솔라나' },
+      { name: 'ADA/KRW', symbol: 'ADAKRW', label: '에이다' },
+      { name: 'DOGE/KRW', symbol: 'DOGEKRW', label: '도지코인' },
+    ],
+    NASDAQ: [
+      { name: 'AAPL', symbol: 'AAPL', label: '애플' },
+      { name: 'TSLA', symbol: 'TSLA', label: '테슬라' },
+      { name: 'NVDA', symbol: 'NVDA', label: '엔비디아' },
+      { name: 'MSFT', symbol: 'MSFT', label: '마이크로소프트' },
+      { name: 'GOOGL', symbol: 'GOOGL', label: '구글' },
+      { name: 'AMZN', symbol: 'AMZN', label: '아마존' },
+      { name: 'META', symbol: 'META', label: '메타' },
+      { name: 'NFLX', symbol: 'NFLX', label: '넷플릭스' },
+    ],
+  };
+
+  const filteredSymbols = popularSymbols[chartConfig.exchange]?.filter(item =>
+    item.name.toLowerCase().includes(symbolSearch.toLowerCase()) ||
+    item.label.includes(symbolSearch) ||
+    item.symbol.toLowerCase().includes(symbolSearch.toLowerCase())
+  ) || [];
 
   useEffect(() => {
     checkAuth();
@@ -101,7 +141,10 @@ export default function NewPostPage() {
   const handleAddChart = () => {
     setFormData({
       ...formData,
-      chartData: chartConfig,
+      chartData: {
+        symbol: `${chartConfig.exchange}:${chartConfig.symbol}`,
+        interval: chartConfig.interval,
+      },
     });
     setShowChartModal(false);
   };
@@ -394,21 +437,83 @@ export default function NewPostPage() {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* 심볼 입력 */}
+                {/* 거래소 선택 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    심볼 (예: BINANCE:BTCUSDT, NASDAQ:AAPL)
+                    거래소 선택
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {['BINANCE', 'UPBIT', 'NASDAQ'].map((exchange) => (
+                      <button
+                        key={exchange}
+                        type="button"
+                        onClick={() => {
+                          setChartConfig({ ...chartConfig, exchange });
+                          setSymbolSearch('');
+                        }}
+                        className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                          chartConfig.exchange === exchange
+                            ? 'bg-blue-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {exchange === 'BINANCE' && '🌐 바이낸스'}
+                        {exchange === 'UPBIT' && '🇰🇷 업비트'}
+                        {exchange === 'NASDAQ' && '📈 나스닥'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 심볼 검색 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    코인/주식 검색
                   </label>
                   <input
                     type="text"
-                    value={chartConfig.symbol}
-                    onChange={(e) => setChartConfig({ ...chartConfig, symbol: e.target.value.toUpperCase() })}
+                    value={symbolSearch}
+                    onChange={(e) => setSymbolSearch(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="BINANCE:BTCUSDT"
+                    placeholder="검색어 입력 (예: 비트코인, BTC, 애플)"
                   />
-                  <p className="mt-2 text-xs text-gray-500">
-                    거래소:심볼 형식으로 입력하세요 (예: BINANCE:ETHUSDT, UPBIT:BTCKRW)
-                  </p>
+                </div>
+
+                {/* 심볼 목록 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    인기 종목
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                    {filteredSymbols.map((item) => (
+                      <button
+                        key={item.symbol}
+                        type="button"
+                        onClick={() => setChartConfig({ ...chartConfig, symbol: item.symbol })}
+                        className={`px-3 py-2 rounded-md text-left transition-all ${
+                          chartConfig.symbol === item.symbol
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{item.label}</div>
+                        <div className="text-xs opacity-75">{item.name}</div>
+                      </button>
+                    ))}
+                    {filteredSymbols.length === 0 && (
+                      <div className="col-span-2 text-center py-8 text-gray-500">
+                        검색 결과가 없습니다
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 선택된 심볼 표시 */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-sm text-blue-900">
+                    <span className="font-semibold">선택된 차트:</span>
+                    <span className="ml-2 font-mono">{chartConfig.exchange}:{chartConfig.symbol}</span>
+                  </div>
                 </div>
 
                 {/* 시간 간격 */}
@@ -441,7 +546,7 @@ export default function NewPostPage() {
                   </label>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <TradingViewChart
-                      symbol={chartConfig.symbol}
+                      symbol={`${chartConfig.exchange}:${chartConfig.symbol}`}
                       interval={chartConfig.interval}
                       height={500}
                     />
