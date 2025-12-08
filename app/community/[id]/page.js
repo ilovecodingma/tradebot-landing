@@ -317,6 +317,32 @@ export default function PostDetailPage() {
 
           {/* 메인 컨텐츠 */}
           <div className="border-b border-gray-200 pb-8 mb-8">
+            {/* TradingView 차트 - 맨 위로 이동 */}
+            {post.chartData && (
+              <div className="mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <h3 className="font-bold text-blue-900">
+                      📊 {post.chartData.symbol} 차트
+                    </h3>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    시간 간격: {post.chartData.interval === 'D' ? '일봉' : post.chartData.interval === 'W' ? '주봉' : post.chartData.interval === 'M' ? '월봉' : `${post.chartData.interval}분`}
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-lg overflow-hidden shadow-lg">
+                  <TradingViewChart
+                    symbol={post.chartData.symbol}
+                    interval={post.chartData.interval}
+                    height={500}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* 이미지 갤러리 */}
             {post.images && post.images.length > 0 && (
               <div className="mb-6">
@@ -343,32 +369,6 @@ export default function PostDetailPage() {
                 {post.content}
               </div>
             </div>
-
-            {/* TradingView 차트 */}
-            {post.chartData && (
-              <div className="mb-6">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                    </svg>
-                    <h3 className="font-bold text-blue-900">
-                      📊 {post.chartData.symbol} 차트
-                    </h3>
-                  </div>
-                  <p className="text-xs text-blue-600 mt-1">
-                    시간 간격: {post.chartData.interval === 'D' ? '일봉' : post.chartData.interval === 'W' ? '주봉' : post.chartData.interval === 'M' ? '월봉' : `${post.chartData.interval}분`}
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-lg overflow-hidden shadow-lg">
-                  <TradingViewChart
-                    symbol={post.chartData.symbol}
-                    interval={post.chartData.interval}
-                    height={500}
-                  />
-                </div>
-              </div>
-            )}
 
             {/* 인터랙션 버튼 */}
             <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
