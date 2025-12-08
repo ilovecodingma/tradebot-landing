@@ -11,7 +11,10 @@
       "Bash(node migrate-magazines.js:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(cmd /c \"rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\ideas && rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\api\\ideas\")"
+      "Bash(cmd /c \"rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\ideas && rd /s /q C:\\Users\\user\\Desktop\\tradebot-landing\\app\\api\\ideas\")",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

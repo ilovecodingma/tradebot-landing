@@ -30,27 +30,9 @@ export default function NewPostPage() {
     interval: 'D',
   });
   const [symbolSearch, setSymbolSearch] = useState('');
-
-  // 인기 심볼 목록
-  const popularSymbols = {
-    BINANCE: [
-      { name: 'BTC/USDT', symbol: 'BTCUSDT', label: '비트코인' },
-      { name: 'ETH/USDT', symbol: 'ETHUSDT', label: '이더리움' },
-      { name: 'XRP/USDT', symbol: 'XRPUSDT', label: '리플' },
-      { name: 'SOL/USDT', symbol: 'SOLUSDT', label: '솔라나' },
-      { name: 'ADA/USDT', symbol: 'ADAUSDT', label: '에이다' },
-      { name: 'DOGE/USDT', symbol: 'DOGEUSDT', label: '도지코인' },
-      { name: 'MATIC/USDT', symbol: 'MATICUSDT', label: '폴리곤' },
-      { name: 'DOT/USDT', symbol: 'DOTUSDT', label: '폴카닷' },
-    ],
-    UPBIT: [
-      { name: 'BTC/KRW', symbol: 'BTCKRW', label: '비트코인' },
-      { name: 'ETH/KRW', symbol: 'ETHKRW', label: '이더리움' },
-      { name: 'XRP/KRW', symbol: 'XRPKRW', label: '리플' },
-      { name: 'SOL/KRW', symbol: 'SOLKRW', label: '솔라나' },
-      { name: 'ADA/KRW', symbol: 'ADAKRW', label: '에이다' },
-      { name: 'DOGE/KRW', symbol: 'DOGEKRW', label: '도지코인' },
-    ],
+  const [availableSymbols, setAvailableSymbols] = useState({
+    BINANCE: [],
+    UPBIT: [],
     NASDAQ: [
       { name: 'AAPL', symbol: 'AAPL', label: '애플' },
       { name: 'TSLA', symbol: 'TSLA', label: '테슬라' },
@@ -61,17 +43,28 @@ export default function NewPostPage() {
       { name: 'META', symbol: 'META', label: '메타' },
       { name: 'NFLX', symbol: 'NFLX', label: '넷플릭스' },
     ],
-  };
+  });
+  const [loadingSymbols, setLoadingSymbols] = useState(false);
 
-  const filteredSymbols = popularSymbols[chartConfig.exchange]?.filter(item =>
+  const filteredSymbols = availableSymbols[chartConfig.exchange]?.filter(item =>
     item.name.toLowerCase().includes(symbolSearch.toLowerCase()) ||
-    item.label.includes(symbolSearch) ||
-    item.symbol.toLowerCase().includes(symbolSearch.toLowerCase())
+    (item.label && item.label.includes(symbolSearch)) ||
+    item.symbol.toLowerCase().includes(symbolSearch.toLowerCase()) ||
+    (item.baseAsset && item.baseAsset.toLowerCase().includes(symbolSearch.toLowerCase())) ||
+    (item.koreanName && item.koreanName.includes(symbolSearch))
   ) || [];
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (chartConfig.exchange === 'BINANCE' && availableSymbols.BINANCE.length === 0) {
+      fetchBinanceSymbols();
+    } else if (chartConfig.exchange === 'UPBIT' && availableSymbols.UPBIT.length === 0) {
+      fetchUpbitSymbols();
+    }
+  }, [chartConfig.exchange]);
 
   const checkAuth = async () => {
     try {
@@ -84,6 +77,38 @@ export default function NewPostPage() {
       setUser(data.user);
     } catch (error) {
       router.push('/login');
+    }
+  };
+
+  const fetchBinanceSymbols = async () => {
+    try {
+      setLoadingSymbols(true);
+      const res = await fetch('/api/symbols/binance');
+      const data = await res.json();
+      setAvailableSymbols(prev => ({
+        ...prev,
+        BINANCE: data.symbols || []
+      }));
+    } catch (error) {
+      console.error('Failed to fetch Binance symbols:', error);
+    } finally {
+      setLoadingSymbols(false);
+    }
+  };
+
+  const fetchUpbitSymbols = async () => {
+    try {
+      setLoadingSymbols(true);
+      const res = await fetch('/api/symbols/upbit');
+      const data = await res.json();
+      setAvailableSymbols(prev => ({
+        ...prev,
+        UPBIT: data.symbols || []
+      }));
+    } catch (error) {
+      console.error('Failed to fetch Upbit symbols:', error);
+    } finally {
+      setLoadingSymbols(false);
     }
   };
 
@@ -482,28 +507,42 @@ export default function NewPostPage() {
                 {/* 심볼 목록 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    인기 종목
+                    {chartConfig.exchange === 'NASDAQ' ? '인기 종목' : '전체 종목'}
+                    {loadingSymbols && (
+                      <span className="ml-2 text-xs text-blue-600">불러오는 중...</span>
+                    )}
                   </label>
                   <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                    {filteredSymbols.map((item) => (
-                      <button
-                        key={item.symbol}
-                        type="button"
-                        onClick={() => setChartConfig({ ...chartConfig, symbol: item.symbol })}
-                        className={`px-3 py-2 rounded-md text-left transition-all ${
-                          chartConfig.symbol === item.symbol
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">{item.label}</div>
-                        <div className="text-xs opacity-75">{item.name}</div>
-                      </button>
-                    ))}
-                    {filteredSymbols.length === 0 && (
+                    {loadingSymbols ? (
                       <div className="col-span-2 text-center py-8 text-gray-500">
-                        검색 결과가 없습니다
+                        <svg className="animate-spin h-8 w-8 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                       </div>
+                    ) : (
+                      <>
+                        {filteredSymbols.map((item) => (
+                          <button
+                            key={item.symbol}
+                            type="button"
+                            onClick={() => setChartConfig({ ...chartConfig, symbol: item.symbol })}
+                            className={`px-3 py-2 rounded-md text-left transition-all ${
+                              chartConfig.symbol === item.symbol
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            <div className="font-medium text-sm">{item.koreanName || item.label || item.baseAsset}</div>
+                            <div className="text-xs opacity-75">{item.name}</div>
+                          </button>
+                        ))}
+                        {filteredSymbols.length === 0 && !loadingSymbols && (
+                          <div className="col-span-2 text-center py-8 text-gray-500">
+                            검색 결과가 없습니다
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
