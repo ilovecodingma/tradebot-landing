@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const TradingViewChart = dynamic(() => import('@/app/components/TradingViewChart'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full flex items-center justify-center bg-gray-100">차트 로딩 중...</div>
+});
 
 export default function CommunityPage() {
   const router = useRouter();
@@ -206,12 +212,24 @@ export default function CommunityPage() {
                   {/* Thumbnail */}
                   <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 overflow-hidden">
                     {post.images && post.images.length > 0 ? (
+                      // 이미지가 있으면 이미지 표시
                       <img
                         src={post.images[0]}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
+                    ) : post.chartData ? (
+                      // 이미지가 없고 차트가 있으면 차트 표시
+                      <div className="w-full h-full">
+                        <TradingViewChart
+                          symbol={post.chartData.symbol}
+                          interval={post.chartData.interval}
+                          height={192}
+                          theme="light"
+                        />
+                      </div>
                     ) : (
+                      // 이미지도 차트도 없으면 기본 아이콘
                       <div className="w-full h-full flex items-center justify-center">
                         <svg className="w-16 h-16 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
