@@ -33,26 +33,38 @@ function TradingViewChart({ symbol = 'BINANCE:BTCUSDT', interval = 'D', theme = 
       // 기존 위젯 제거
       containerRef.current.innerHTML = '';
 
-      new window.TradingView.widget({
-        autosize: true,
-        symbol: symbol,
-        interval: interval,
-        timezone: 'Asia/Seoul',
-        theme: theme,
-        style: '1',
-        locale: 'kr',
-        toolbar_bg: '#f1f3f6',
-        enable_publishing: false,
-        hide_top_toolbar: false,
-        hide_legend: false,
-        save_image: false,
-        container_id: containerRef.current.id,
-        studies: [],
-        show_popup_button: true,
-        popup_width: '1000',
-        popup_height: '650',
-        support_host: 'https://www.tradingview.com'
-      });
+      try {
+        new window.TradingView.widget({
+          autosize: true,
+          symbol: symbol,
+          interval: interval,
+          timezone: 'Asia/Seoul',
+          theme: theme,
+          style: '1',
+          locale: 'kr',
+          toolbar_bg: '#f1f3f6',
+          enable_publishing: false,
+          hide_top_toolbar: false,
+          hide_legend: false,
+          save_image: false,
+          container_id: containerRef.current.id,
+          studies: [],
+          show_popup_button: false,
+          popup_width: '1000',
+          popup_height: '650',
+          support_host: 'https://www.tradingview.com',
+          // WebSocket 관련 설정 추가
+          disabled_features: ['use_localstorage_for_settings'],
+          enabled_features: ['hide_left_toolbar_by_default'],
+          // 데이터 로딩 최적화
+          loading_screen: { backgroundColor: theme === 'dark' ? '#131722' : '#ffffff' },
+          overrides: {
+            'mainSeriesProperties.showCountdown': false,
+          }
+        });
+      } catch (error) {
+        console.error('TradingView widget initialization error:', error);
+      }
     };
 
     if (!scriptLoadedRef.current) {

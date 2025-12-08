@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request) {
@@ -45,26 +44,19 @@ export async function POST(request) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     // 파일 이름 생성 (타임스탬프 + 원본 파일명)
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const filename = `${timestamp}-${originalName}`;
 
-    // public/uploads 폴더에 저장
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const filepath = path.join(uploadDir, filename);
-
-    await writeFile(filepath, buffer);
-
-    // 접근 가능한 URL 반환
-    const imageUrl = `/uploads/${filename}`;
+    // Vercel Blob에 업로드
+    const blob = await put(filename, file, {
+      access: 'public',
+    });
 
     return NextResponse.json({
       message: '이미지가 업로드되었습니다.',
-      url: imageUrl
+      url: blob.url
     });
   } catch (error) {
     console.error('Upload error:', error);
