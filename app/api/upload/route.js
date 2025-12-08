@@ -50,8 +50,18 @@ export async function POST(request) {
     const filename = `${timestamp}-${originalName}`;
 
     // Vercel Blob에 업로드
+    // BLOB_READ_WRITE_TOKEN 환경 변수가 필요함
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is not set');
+      return NextResponse.json(
+        { error: 'Blob Storage가 설정되지 않았습니다. Vercel 대시보드에서 Blob Storage를 생성해주세요.' },
+        { status: 500 }
+      );
+    }
+
     const blob = await put(filename, file, {
       access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     return NextResponse.json({
@@ -60,8 +70,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Upload error:', error);
+    console.error('Error details:', error.message);
     return NextResponse.json(
-      { error: '이미지 업로드에 실패했습니다.' },
+      { error: `이미지 업로드에 실패했습니다: ${error.message}` },
       { status: 500 }
     );
   }
