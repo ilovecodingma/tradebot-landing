@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
-    domains: ['api.upbit.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.upbit.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.vercel.app',
+      },
+    ],
   },
   // 빌드 ID를 타임스탬프로 설정하여 캐시 무효화
   generateBuildId: async () => {
@@ -32,15 +38,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  webpack: (config) => {
-    // CSV 파일을 raw text로 로드
-    config.module.rules.push({
-      test: /\.csv$/,
-      use: 'raw-loader',
-    });
-
-    return config;
   },
 };
 
