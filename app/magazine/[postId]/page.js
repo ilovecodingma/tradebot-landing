@@ -14,7 +14,16 @@ const MagazinePost = ({ params }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const postId = params?.postId;
+  const [postId, setPostId] = useState(null);
+
+  useEffect(() => {
+    // Next.js 16에서 params는 Promise로 반환됨
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setPostId(resolvedParams.postId);
+    };
+    getParams();
+  }, [params]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
