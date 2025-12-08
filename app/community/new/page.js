@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const TradingViewChart = dynamic(() => import('@/app/components/TradingViewChart'), {
+  ssr: false,
+  loading: () => <div className="h-[500px] flex items-center justify-center bg-gray-100 rounded-lg">차트 로딩 중...</div>
+});
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -12,10 +18,16 @@ export default function NewPostPage() {
     content: '',
     category: 'general',
     images: [],
+    chartData: null,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showChartModal, setShowChartModal] = useState(false);
+  const [chartConfig, setChartConfig] = useState({
+    symbol: 'BINANCE:BTCUSDT',
+    interval: 'D',
+  });
 
   useEffect(() => {
     checkAuth();
@@ -83,6 +95,21 @@ export default function NewPostPage() {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAddChart = () => {
+    setFormData({
+      ...formData,
+      chartData: chartConfig,
+    });
+    setShowChartModal(false);
+  };
+
+  const handleRemoveChart = () => {
+    setFormData({
+      ...formData,
+      chartData: null,
     });
   };
 
@@ -275,6 +302,52 @@ export default function NewPostPage() {
                 </div>
               </div>
 
+              {/* 차트 추가 섹션 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  TradingView 차트 추가
+                </label>
+                {!formData.chartData ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowChartModal(true)}
+                    className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <span>차트 추가하기</span>
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-900">
+                          📊 {formData.chartData.symbol} ({formData.chartData.interval})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleRemoveChart}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-xs text-blue-600">차트가 게시글에 포함됩니다</p>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <TradingViewChart
+                        symbol={formData.chartData.symbol}
+                        interval={formData.chartData.interval}
+                        height={400}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="submit"
@@ -301,6 +374,100 @@ export default function NewPostPage() {
             </form>
           </div>
         </div>
+
+        {/* 차트 설정 모달 */}
+        {showChartModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-bold text-gray-900">TradingView 차트 추가</h3>
+                  <button
+                    onClick={() => setShowChartModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* 심볼 입력 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    심볼 (예: BINANCE:BTCUSDT, NASDAQ:AAPL)
+                  </label>
+                  <input
+                    type="text"
+                    value={chartConfig.symbol}
+                    onChange={(e) => setChartConfig({ ...chartConfig, symbol: e.target.value.toUpperCase() })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="BINANCE:BTCUSDT"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    거래소:심볼 형식으로 입력하세요 (예: BINANCE:ETHUSDT, UPBIT:BTCKRW)
+                  </p>
+                </div>
+
+                {/* 시간 간격 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    시간 간격
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {['1', '5', '15', '60', '240', 'D', 'W', 'M'].map((int) => (
+                      <button
+                        key={int}
+                        type="button"
+                        onClick={() => setChartConfig({ ...chartConfig, interval: int })}
+                        className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                          chartConfig.interval === int
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {int === 'D' ? '일봉' : int === 'W' ? '주봉' : int === 'M' ? '월봉' : `${int}분`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 미리보기 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    차트 미리보기
+                  </label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <TradingViewChart
+                      symbol={chartConfig.symbol}
+                      interval={chartConfig.interval}
+                      height={500}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-200 flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddChart}
+                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 font-medium transition-colors"
+                >
+                  차트 추가하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowChartModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-md hover:bg-gray-200 font-medium transition-colors"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
