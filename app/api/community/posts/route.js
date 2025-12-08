@@ -58,7 +58,7 @@ export async function POST(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { title, content, category, images } = await request.json();
+    const { title, content, category, images, chartData } = await request.json();
 
     if (!title || !content) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request) {
     const db = client.db('tradebot');
     const posts = db.collection('posts');
 
-    const result = await posts.insertOne({
+    const postData = {
       title,
       content,
       category: category || 'general',
@@ -84,7 +84,14 @@ export async function POST(request) {
       views: 0,
       likes: 0,
       comments: []
-    });
+    };
+
+    // chartData가 있으면 추가
+    if (chartData) {
+      postData.chartData = chartData;
+    }
+
+    const result = await posts.insertOne(postData);
 
     return NextResponse.json(
       {

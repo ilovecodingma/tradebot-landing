@@ -235,6 +235,11 @@ export default function CommunityPage() {
                           [{post.commentCount || post.comments?.length || 0}]
                         </span>
                       )}
+                      {post.chartData && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          📊 차트
+                        </span>
+                      )}
                     </h3>
 
                     {/* Excerpt */}
