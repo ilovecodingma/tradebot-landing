@@ -176,15 +176,54 @@ const MagazinePost = ({ params }) => {
 
   const handleShare = () => {
     const url = window.location.href;
+    const title = magazine?.title;
+
+    // 카카오톡 공유 (Kakao SDK 사용)
+    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.isInitialized()) {
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: title,
+            description: magazine?.excerpt || magazine?.content?.substring(0, 100) + '...',
+            imageUrl: magazine?.coverImage
+              ? `${window.location.origin}${magazine.coverImage}`
+              : `${window.location.origin}/og-image.png`,
+            link: {
+              mobileWebUrl: url,
+              webUrl: url,
+            },
+          },
+          buttons: [
+            {
+              title: '자세히 보기',
+              link: {
+                mobileWebUrl: url,
+                webUrl: url,
+              },
+            },
+          ],
+        });
+        return;
+      } catch (error) {
+        console.error('Kakao share error:', error);
+      }
+    }
+
+    // 웹 공유 API 사용 (모바일 브라우저)
     if (navigator.share) {
       navigator.share({
-        title: magazine?.title,
-        text: magazine?.excerpt,
+        title: title,
+        text: magazine?.excerpt || magazine?.content?.substring(0, 100) + '...',
         url: url,
-      }).catch((error) => console.log('Error sharing:', error));
+      }).catch((err) => console.log('Error sharing:', err));
     } else {
+      // 클립보드 복사
       navigator.clipboard.writeText(url).then(() => {
-        alert('링크가 복사되었습니다!');
+        alert('링크가 클립보드에 복사되었습니다!');
+      }).catch(() => {
+        // 클립보드 복사 실패시 프롬프트로 표시
+        prompt('이 링크를 복사하세요:', url);
       });
     }
   };
