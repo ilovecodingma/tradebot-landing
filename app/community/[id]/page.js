@@ -94,6 +94,27 @@ export default function PostDetailPage() {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/community/posts/${postId}/comments?commentId=${commentId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        fetchPost(); // 댓글 목록 새로고침
+      } else {
+        alert('댓글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      alert('댓글 삭제에 실패했습니다.');
+    }
+  };
+
   const handleDeletePost = async () => {
     if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
       return;
@@ -418,20 +439,48 @@ export default function PostDetailPage() {
                     {user.name[0]}
                   </div>
                   <div className="flex-1">
+                    {replyTo && (
+                      <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
+                        <span className="text-sm text-blue-900">
+                          <span className="font-semibold">@{replyTo.authorName}</span>님에게 답글 작성 중
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setReplyTo(null)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                     <textarea
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm"
                       rows={3}
-                      placeholder="댓글을 남겨보세요..."
+                      placeholder={replyTo ? `@${replyTo.authorName}님에게 답글 작성...` : "댓글을 남겨보세요..."}
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
                     />
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-2 flex justify-end gap-2">
+                      {replyTo && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyTo(null);
+                            setCommentContent('');
+                          }}
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors"
+                        >
+                          취소
+                        </button>
+                      )}
                       <button
                         type="submit"
                         disabled={submittingComment || !commentContent.trim()}
                         className="px-5 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                       >
-                        {submittingComment ? '작성 중...' : '댓글 작성'}
+                        {submittingComment ? '작성 중...' : (replyTo ? '답글 작성' : '댓글 작성')}
                       </button>
                     </div>
                   </div>
@@ -456,21 +505,48 @@ export default function PostDetailPage() {
                     key={comment._id}
                     className="flex items-start gap-3 pb-6 border-b border-gray-100 last:border-0"
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    <Link
+                      href={`/profile/${comment.authorId}`}
+                      className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 hover:ring-2 hover:ring-primary-300 transition-all"
+                    >
                       {comment.authorName[0]}
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-gray-900 text-sm">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Link
+                          href={`/profile/${comment.authorId}`}
+                          className="font-semibold text-gray-900 text-sm hover:text-primary-600 transition-colors"
+                        >
                           {comment.authorName}
-                        </span>
+                        </Link>
                         <span className="text-xs text-gray-500">
                           {formatDate(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-2">
                         {comment.content}
                       </p>
+                      {user && (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => {
+                              setReplyTo(comment);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="text-xs text-gray-500 hover:text-primary-600 font-medium transition-colors"
+                          >
+                            답글
+                          </button>
+                          {user._id === comment.authorId.toString() && (
+                            <button
+                              onClick={() => handleDeleteComment(comment._id)}
+                              className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
