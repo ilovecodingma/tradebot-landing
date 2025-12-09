@@ -35,6 +35,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        <title>TradeBot - AI 기반 트레이딩 플랫폼</title>
+        <meta name="description" content="데이터 기반 시장 분석과 검증된 트레이딩 전략을 제공하는 AI 트레이딩 플랫폼" />
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>" />
         <Script
           src="https://developers.kakao.com/sdk/js/kakao.js"
           strategy="afterInteractive"

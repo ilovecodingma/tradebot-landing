@@ -44,7 +44,7 @@ export async function POST(request, { params }) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { id } = await params;
-    const { content } = await request.json();
+    const { content, parentId } = await request.json();
 
     if (!content || content.trim() === '') {
       return NextResponse.json(
@@ -63,7 +63,9 @@ export async function POST(request, { params }) {
       authorId: new ObjectId(decoded.userId),
       authorName: decoded.name,
       authorEmail: decoded.email,
-      createdAt: new Date()
+      createdAt: new Date(),
+      parentId: parentId ? new ObjectId(parentId) : null, // 대댓글인 경우 부모 댓글 ID
+      replies: [] // 대댓글 배열
     };
 
     const result = await posts.updateOne(

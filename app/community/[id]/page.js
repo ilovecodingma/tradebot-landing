@@ -18,6 +18,7 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [commentContent, setCommentContent] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [replyTo, setReplyTo] = useState(null); // 답글 대상 댓글
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
 
