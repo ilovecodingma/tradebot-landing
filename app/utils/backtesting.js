@@ -3,46 +3,57 @@
  * 다양한 전략을 커스터마이징할 수 있는 백테스팅 엔진
  */
 
-// EMA 계산
+// EMA 계산 (Python pandas ewm과 동일)
 function calculateEMA(data, period) {
   const k = 2 / (period + 1);
-  const ema = [];
+  const ema = new Array(data.length);
 
-  // 첫 번째 값은 SMA로 시작
+  // 첫 번째 유효한 값부터 SMA로 시작
   let sum = 0;
+  let count = 0;
   for (let i = 0; i < Math.min(period, data.length); i++) {
-    sum += data[i];
+    if (data[i] !== undefined && !isNaN(data[i])) {
+      sum += data[i];
+      count++;
+    }
   }
-  ema[period - 1] = sum / period;
+
+  if (count > 0) {
+    ema[period - 1] = sum / count;
+  }
 
   // EMA 계산
   for (let i = period; i < data.length; i++) {
-    ema[i] = data[i] * k + ema[i - 1] * (1 - k);
+    if (data[i] !== undefined && !isNaN(data[i]) && ema[i - 1] !== undefined) {
+      ema[i] = data[i] * k + ema[i - 1] * (1 - k);
+    }
   }
 
   return ema;
 }
 
-// MACD 계산
+// MACD 계산 (Python 버전과 완전히 동일)
 export function calculateMACD(prices, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+  // Fast EMA와 Slow EMA 계산
   const fastEMA = calculateEMA(prices, fastPeriod);
   const slowEMA = calculateEMA(prices, slowPeriod);
 
-  const macd = [];
+  // MACD Line 계산
+  const macd = new Array(prices.length);
   for (let i = 0; i < prices.length; i++) {
     if (fastEMA[i] !== undefined && slowEMA[i] !== undefined) {
       macd[i] = fastEMA[i] - slowEMA[i];
     }
   }
 
-  const signal = calculateEMA(macd.filter(v => v !== undefined), signalPeriod);
-  const histogram = [];
+  // Signal Line 계산 (MACD의 EMA)
+  const signal = calculateEMA(macd, signalPeriod);
 
-  let signalIndex = 0;
-  for (let i = 0; i < macd.length; i++) {
-    if (macd[i] !== undefined && signal[signalIndex] !== undefined) {
-      histogram[i] = macd[i] - signal[signalIndex];
-      signalIndex++;
+  // Histogram 계산
+  const histogram = new Array(prices.length);
+  for (let i = 0; i < prices.length; i++) {
+    if (macd[i] !== undefined && signal[i] !== undefined) {
+      histogram[i] = macd[i] - signal[i];
     }
   }
 
@@ -65,6 +76,8 @@ export function calculateMA(prices, period) {
 // 골든 크로스 감지
 function isGoldenCross(macd, signal, index) {
   if (index < 1) return false;
+  if (macd[index] === undefined || signal[index] === undefined) return false;
+  if (macd[index - 1] === undefined || signal[index - 1] === undefined) return false;
   const prevDelta = macd[index - 1] - signal[index - 1];
   const currDelta = macd[index] - signal[index];
   return prevDelta <= 0 && currDelta > 0;
@@ -73,6 +86,8 @@ function isGoldenCross(macd, signal, index) {
 // 데드 크로스 감지
 function isDeadCross(macd, signal, index) {
   if (index < 1) return false;
+  if (macd[index] === undefined || signal[index] === undefined) return false;
+  if (macd[index - 1] === undefined || signal[index - 1] === undefined) return false;
   const prevDelta = macd[index - 1] - signal[index - 1];
   const currDelta = macd[index] - signal[index];
   return prevDelta >= 0 && currDelta < 0;
@@ -207,6 +222,18 @@ export function runBacktestV2(data, strategy) {
       }
 
       // 매도 신호: MACD가 Signal 아래로 크로스
+      if (signal[i] === undefined || (i > 0 && signal[i - 1] === undefined)) {
+        const currentEquity = cash + position * currentPrice;
+        equity.push({
+          index: i,
+          timestamp: data[i].timestamp,
+          equity: currentEquity,
+          cash,
+          position: position * currentPrice,
+        });
+        continue;
+      }
+
       const macdDiff = macd[i] - signal[i];
       const prevMacdDiff = i > 0 ? macd[i - 1] - signal[i - 1] : 0;
 
@@ -259,6 +286,19 @@ export function runBacktestV2(data, strategy) {
 
     // === 매수 로직 ===
     if (position === 0 && cash > 0) {
+      // Signal이 유효한지 체크
+      if (signal[i] === undefined || (i > 0 && signal[i - 1] === undefined)) {
+        const currentEquity = cash;
+        equity.push({
+          index: i,
+          timestamp: data[i].timestamp,
+          equity: currentEquity,
+          cash,
+          position: 0,
+        });
+        continue;
+      }
+
       const macdDiff = macd[i] - signal[i];
       const prevMacdDiff = i > 0 ? macd[i - 1] - signal[i - 1] : 0;
 
