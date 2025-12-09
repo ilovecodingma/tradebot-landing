@@ -432,61 +432,33 @@ export default function PostDetailPage() {
               댓글 {post.comments?.length || 0}
             </h2>
 
-            {user ? (
+            {user && !replyTo ? (
               <form onSubmit={handleSubmitComment} className="mb-8">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
                     {user.name[0]}
                   </div>
                   <div className="flex-1">
-                    {replyTo && (
-                      <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
-                        <span className="text-sm text-blue-900">
-                          <span className="font-semibold">@{replyTo.authorName}</span>님에게 답글 작성 중
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setReplyTo(null)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
                     <textarea
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm"
                       rows={3}
-                      placeholder={replyTo ? `@${replyTo.authorName}님에게 답글 작성...` : "댓글을 남겨보세요..."}
+                      placeholder="댓글을 남겨보세요..."
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
                     />
-                    <div className="mt-2 flex justify-end gap-2">
-                      {replyTo && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReplyTo(null);
-                            setCommentContent('');
-                          }}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors"
-                        >
-                          취소
-                        </button>
-                      )}
+                    <div className="mt-2 flex justify-end">
                       <button
                         type="submit"
                         disabled={submittingComment || !commentContent.trim()}
                         className="px-5 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                       >
-                        {submittingComment ? '작성 중...' : (replyTo ? '답글 작성' : '댓글 작성')}
+                        {submittingComment ? '작성 중...' : '댓글 작성'}
                       </button>
                     </div>
                   </div>
                 </div>
               </form>
-            ) : (
+            ) : !user ? (
               <div className="mb-8 p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
                 <p className="text-gray-600 mb-3">댓글을 작성하려면 로그인이 필요합니다.</p>
                 <Link
@@ -529,13 +501,10 @@ export default function PostDetailPage() {
                       {user && (
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => {
-                              setReplyTo(comment);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
+                            onClick={() => setReplyTo(replyTo?._id === comment._id ? null : comment)}
                             className="text-xs text-gray-500 hover:text-primary-600 font-medium transition-colors"
                           >
-                            답글
+                            {replyTo?._id === comment._id ? '취소' : '답글'}
                           </button>
                           {user._id === comment.authorId.toString() && (
                             <button
@@ -546,6 +515,49 @@ export default function PostDetailPage() {
                             </button>
                           )}
                         </div>
+                      )}
+
+                      {/* 답글 입력 폼 */}
+                      {user && replyTo?._id === comment._id && (
+                        <form onSubmit={handleSubmitComment} className="mt-4 ml-0">
+                          <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                              {user.name[0]}
+                            </div>
+                            <div className="flex-1">
+                              <div className="mb-2 text-xs text-blue-900">
+                                <span className="font-semibold">@{comment.authorName}</span>님에게 답글
+                              </div>
+                              <textarea
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm"
+                                rows={2}
+                                placeholder={`@${comment.authorName}님에게 답글...`}
+                                value={commentContent}
+                                onChange={(e) => setCommentContent(e.target.value)}
+                                autoFocus
+                              />
+                              <div className="mt-2 flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setReplyTo(null);
+                                    setCommentContent('');
+                                  }}
+                                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors"
+                                >
+                                  취소
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={submittingComment || !commentContent.trim()}
+                                  className="px-4 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium transition-colors"
+                                >
+                                  {submittingComment ? '작성 중...' : '답글 작성'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </form>
                       )}
                     </div>
                   </div>
