@@ -157,11 +157,15 @@ export default function PostDetailPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: commentContent }),
+        body: JSON.stringify({
+          content: commentContent,
+          parentId: replyTo?._id || null
+        }),
       });
 
       if (res.ok) {
         setCommentContent('');
+        setReplyTo(null); // 답글 작성 후 replyTo 초기화
         fetchPost();
       } else {
         alert('댓글 작성에 실패했습니다.');
@@ -472,11 +476,14 @@ export default function PostDetailPage() {
 
             <div className="space-y-6">
               {post.comments && post.comments.length > 0 ? (
-                post.comments.map((comment) => (
-                  <div
-                    key={comment._id}
-                    className="flex items-start gap-3 pb-6 border-b border-gray-100 last:border-0"
-                  >
+                post.comments
+                  .filter(comment => !comment.parentId) // 최상위 댓글만 필터링
+                  .map((comment) => (
+                  <div key={comment._id}>
+                    {/* 최상위 댓글 */}
+                    <div
+                      className="flex items-start gap-3 pb-6 border-b border-gray-100"
+                    >
                     <Link
                       href={`/profile/${comment.authorId}`}
                       className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 hover:ring-2 hover:ring-primary-300 transition-all"
@@ -560,6 +567,49 @@ export default function PostDetailPage() {
                         </form>
                       )}
                     </div>
+                  </div>
+
+                  {/* 답글 목록 */}
+                  {post.comments
+                    .filter(reply => reply.parentId && reply.parentId.toString() === comment._id.toString())
+                    .map((reply) => (
+                      <div
+                        key={reply._id}
+                        className="flex items-start gap-3 pb-6 border-b border-gray-100 ml-12"
+                      >
+                        <Link
+                          href={`/profile/${reply.authorId}`}
+                          className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 hover:ring-2 hover:ring-primary-300 transition-all"
+                        >
+                          {reply.authorName[0]}
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <Link
+                              href={`/profile/${reply.authorId}`}
+                              className="font-semibold text-gray-900 text-sm hover:text-primary-600 transition-colors"
+                            >
+                              {reply.authorName}
+                            </Link>
+                            <span className="text-xs text-gray-500">
+                              {formatDate(reply.createdAt)}
+                            </span>
+                            <span className="text-xs text-blue-600 font-medium">답글</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-2">
+                            {reply.content}
+                          </p>
+                          {user && user._id === reply.authorId.toString() && (
+                            <button
+                              onClick={() => handleDeleteComment(reply._id)}
+                              className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))
               ) : (
