@@ -78,7 +78,307 @@ function isDeadCross(macd, signal, index) {
   return prevDelta >= 0 && currDelta < 0;
 }
 
-// 백테스팅 실행
+/**
+ * trading-bot-v1의 MACDStrategy를 JavaScript로 구현
+ * Python backtesting.py 라이브러리 로직과 동일하게 동작
+ */
+export function runBacktestV2(data, strategy) {
+  const {
+    initialCash = 10000000,
+    commission = 0.0005,
+    fastPeriod = 12,
+    slowPeriod = 26,
+    signalPeriod = 7, // Python 버전은 7
+    macdThreshold = 0,
+    takeProfit = 0.05, // Python 버전은 5%
+    stopLoss = 0.01,   // Python 버전은 1%
+    minHoldingPeriod = 1,
+    macdCrossoverThreshold = 0.0,
+  } = strategy;
+
+  const prices = data.map(d => d.close);
+  const { macd, signal } = calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod);
+
+  let cash = initialCash;
+  let position = 0; // 코인 수량
+  let entryPrice = null;
+  let entryBar = null;
+  let lastSignalBar = null;
+
+  const trades = [];
+  const equity = [];
+  const signalEvents = []; // LOG 이벤트 저장
+
+  for (let i = Math.max(slowPeriod, signalPeriod); i < data.length; i++) {
+    const currentBar = i;
+    const currentPrice = prices[i];
+    const macdVal = macd[i];
+    const signalVal = signal[i];
+
+    if (macdVal === undefined || signalVal === undefined) continue;
+
+    const positionStatus = position > 0 ? 'Gold' : 'Dead';
+
+    // 상태 로그 (매 봉마다)
+    signalEvents.push({
+      bar: currentBar,
+      type: 'LOG',
+      position: positionStatus,
+      macd: macdVal,
+      signal: signalVal,
+      price: currentPrice,
+    });
+
+    // 같은 봉에서 신호 중복 방지
+    if (lastSignalBar === currentBar) {
+      // 자산 계산만 수행
+      const currentEquity = cash + (position > 0 ? position * currentPrice : 0);
+      equity.push({
+        index: i,
+        timestamp: data[i].timestamp,
+        equity: currentEquity,
+        cash,
+        position: position * currentPrice,
+      });
+      continue;
+    }
+
+    // === 매도 로직 ===
+    if (position > 0 && entryPrice !== null) {
+      const barsSinceEntry = currentBar - entryBar;
+      const tpPrice = entryPrice * (1 + takeProfit);
+      const slPrice = entryPrice * (1 - stopLoss);
+
+      // 익절 또는 손절
+      if (currentPrice >= tpPrice || currentPrice <= slPrice) {
+        const sellAmount = position * currentPrice * (1 - commission);
+        const profit = sellAmount - (position * entryPrice);
+        const profitPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+
+        cash += sellAmount;
+
+        trades.push({
+          type: 'SELL',
+          reason: currentPrice >= tpPrice ? 'Take Profit' : 'Stop Loss',
+          index: i,
+          timestamp: data[i].timestamp,
+          price: currentPrice,
+          quantity: position,
+          profit,
+          profitPct,
+        });
+
+        signalEvents.push({
+          bar: currentBar,
+          type: 'SELL',
+          position: positionStatus,
+          macd: macdVal,
+          signal: signalVal,
+        });
+
+        position = 0;
+        entryPrice = null;
+        entryBar = null;
+        lastSignalBar = currentBar;
+
+        // 자산 계산
+        const currentEquity = cash;
+        equity.push({
+          index: i,
+          timestamp: data[i].timestamp,
+          equity: currentEquity,
+          cash,
+          position: 0,
+        });
+        continue;
+      }
+
+      // 최소 보유 기간 체크
+      if (barsSinceEntry < minHoldingPeriod) {
+        const currentEquity = cash + position * currentPrice;
+        equity.push({
+          index: i,
+          timestamp: data[i].timestamp,
+          equity: currentEquity,
+          cash,
+          position: position * currentPrice,
+        });
+        continue;
+      }
+
+      // 매도 신호: MACD가 Signal 아래로 크로스
+      const macdDiff = macd[i] - signal[i];
+      const prevMacdDiff = i > 0 ? macd[i - 1] - signal[i - 1] : 0;
+
+      if (
+        macdDiff < -macdCrossoverThreshold &&
+        prevMacdDiff >= 0 &&
+        macd[i] >= macdThreshold
+      ) {
+        const sellAmount = position * currentPrice * (1 - commission);
+        const profit = sellAmount - (position * entryPrice);
+        const profitPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+
+        cash += sellAmount;
+
+        trades.push({
+          type: 'SELL',
+          reason: 'MACD Cross Down',
+          index: i,
+          timestamp: data[i].timestamp,
+          price: currentPrice,
+          quantity: position,
+          profit,
+          profitPct,
+        });
+
+        signalEvents.push({
+          bar: currentBar,
+          type: 'SELL',
+          position: positionStatus,
+          macd: macdVal,
+          signal: signalVal,
+        });
+
+        position = 0;
+        entryPrice = null;
+        entryBar = null;
+        lastSignalBar = currentBar;
+
+        const currentEquity = cash;
+        equity.push({
+          index: i,
+          timestamp: data[i].timestamp,
+          equity: currentEquity,
+          cash,
+          position: 0,
+        });
+        continue;
+      }
+    }
+
+    // === 매수 로직 ===
+    if (position === 0 && cash > 0) {
+      const macdDiff = macd[i] - signal[i];
+      const prevMacdDiff = i > 0 ? macd[i - 1] - signal[i - 1] : 0;
+
+      // 매수 신호: MACD가 Signal 위로 크로스
+      if (
+        macdDiff > macdCrossoverThreshold &&
+        prevMacdDiff <= 0 &&
+        macd[i] >= macdThreshold
+      ) {
+        const buyAmount = cash * 0.95; // 95% 사용
+        position = buyAmount / currentPrice / (1 + commission);
+        cash -= buyAmount;
+        entryPrice = currentPrice;
+        entryBar = currentBar;
+
+        trades.push({
+          type: 'BUY',
+          reason: 'MACD Cross Up',
+          index: i,
+          timestamp: data[i].timestamp,
+          price: currentPrice,
+          quantity: position,
+        });
+
+        signalEvents.push({
+          bar: currentBar,
+          type: 'BUY',
+          position: 'Dead', // 매수 전이라 Dead
+          macd: macdVal,
+          signal: signalVal,
+        });
+
+        lastSignalBar = currentBar;
+      }
+    }
+
+    // 자산 계산
+    const currentEquity = cash + (position > 0 ? position * currentPrice : 0);
+    equity.push({
+      index: i,
+      timestamp: data[i].timestamp,
+      equity: currentEquity,
+      cash,
+      position: position * currentPrice,
+    });
+  }
+
+  // 마지막 포지션 정리
+  if (position > 0) {
+    const lastPrice = prices[prices.length - 1];
+    const sellAmount = position * lastPrice * (1 - commission);
+    const profit = sellAmount - (position * entryPrice);
+    const profitPct = ((lastPrice - entryPrice) / entryPrice) * 100;
+
+    cash += sellAmount;
+
+    trades.push({
+      type: 'SELL',
+      reason: 'End of Period',
+      index: data.length - 1,
+      timestamp: data[data.length - 1].timestamp,
+      price: lastPrice,
+      quantity: position,
+      profit,
+      profitPct,
+    });
+  }
+
+  // 통계 계산
+  const finalEquity = cash;
+  const totalReturn = ((finalEquity - initialCash) / initialCash) * 100;
+  const startPrice = prices[Math.max(slowPeriod, signalPeriod)];
+  const endPrice = prices[prices.length - 1];
+  const buyHoldReturn = ((endPrice - startPrice) / startPrice) * 100;
+
+  const sellTrades = trades.filter(t => t.type === 'SELL');
+  const winningTrades = sellTrades.filter(t => t.profit > 0);
+  const losingTrades = sellTrades.filter(t => t.profit < 0);
+  const winRate = sellTrades.length > 0 ? (winningTrades.length / sellTrades.length) * 100 : 0;
+
+  const allProfits = sellTrades.map(t => t.profitPct);
+  const avgTrade = allProfits.length > 0 ? allProfits.reduce((a, b) => a + b, 0) / allProfits.length : 0;
+  const maxTrade = allProfits.length > 0 ? Math.max(...allProfits) : 0;
+  const minTrade = allProfits.length > 0 ? Math.min(...allProfits) : 0;
+
+  // 최대 낙폭 계산
+  let maxDrawdown = 0;
+  let peak = initialCash;
+  for (const e of equity) {
+    if (e.equity > peak) peak = e.equity;
+    const drawdown = ((peak - e.equity) / peak) * 100;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+  }
+
+  return {
+    stats: {
+      initialCash,
+      finalEquity,
+      totalReturn,
+      buyHoldReturn,
+      totalTrades: sellTrades.length,
+      winRate,
+      avgTrade,
+      maxTrade,
+      minTrade,
+      maxDrawdown,
+      winningTrades: winningTrades.length,
+      losingTrades: losingTrades.length,
+    },
+    trades,
+    equity,
+    signalEvents,
+    indicators: {
+      macd,
+      signal,
+    },
+  };
+}
+
+// 기존 백테스팅 실행 (호환성 유지)
 export function runBacktest(data, strategy) {
   const {
     initialCash = 10000000,
@@ -105,7 +405,25 @@ export function runBacktest(data, strategy) {
     stopLossEnabled = true,
     macdNegativeEnabled = false,
     deadCrossEnabled = false,
+    // V2 모드
+    useV2Logic = false,
   } = strategy;
+
+  // V2 로직 사용 (trading-bot-v1과 동일)
+  if (useV2Logic) {
+    return runBacktestV2(data, {
+      initialCash,
+      commission,
+      fastPeriod,
+      slowPeriod,
+      signalPeriod,
+      macdThreshold,
+      takeProfit,
+      stopLoss,
+      minHoldingPeriod,
+      macdCrossoverThreshold: 0,
+    });
+  }
 
   const prices = data.map(d => d.close);
   const { macd, signal, histogram } = calculateMACD(prices, fastPeriod, slowPeriod, signalPeriod);

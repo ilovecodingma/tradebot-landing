@@ -32,6 +32,9 @@ export default function BacktestPage() {
     stopLoss: 0.01,
     trailingStop: 0.1,
     minHoldingPeriod: 5,
+    // V2 로직 사용 (trading-bot-v1과 동일)
+    useV2Logic: false,
+    macdCrossoverThreshold: 0.0,
     // 매수 조건
     goldenCrossEnabled: true,
     macdPositiveEnabled: false,
@@ -249,6 +252,53 @@ export default function BacktestPage() {
               </div>
             </div>
 
+            {/* 전략 모드 선택 */}
+            <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-blue-500">
+              <h2 className="text-2xl font-semibold mb-4 text-blue-300">전략 모드</h2>
+
+              <div className="space-y-3">
+                <label className="flex items-center space-x-3 cursor-pointer p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
+                  <input
+                    type="radio"
+                    name="strategyMode"
+                    checked={!strategy.useV2Logic}
+                    onChange={() => updateStrategy('useV2Logic', false)}
+                    className="w-5 h-5 accent-blue-500"
+                  />
+                  <div>
+                    <div className="font-semibold">커스텀 전략 (기본)</div>
+                    <div className="text-xs text-gray-400">다양한 조건 조합 가능</div>
+                  </div>
+                </label>
+
+                <label className="flex items-center space-x-3 cursor-pointer p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
+                  <input
+                    type="radio"
+                    name="strategyMode"
+                    checked={strategy.useV2Logic}
+                    onChange={() => updateStrategy('useV2Logic', true)}
+                    className="w-5 h-5 accent-blue-500"
+                  />
+                  <div>
+                    <div className="font-semibold">Trading-Bot V1 전략</div>
+                    <div className="text-xs text-gray-400">Python 백테스터와 동일한 로직</div>
+                  </div>
+                </label>
+              </div>
+
+              {strategy.useV2Logic && (
+                <div className="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border border-blue-500 text-xs">
+                  <p className="font-semibold mb-1">V1 전략 특징:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-300">
+                    <li>MACD 골든/데드 크로스</li>
+                    <li>익절 5% / 손절 1%</li>
+                    <li>Signal Period 7</li>
+                    <li>최소 보유 1봉</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
             {/* MACD 파라미터 */}
             <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500">
               <h2 className="text-2xl font-semibold mb-4 text-purple-300">MACD 파라미터</h2>
@@ -273,11 +323,19 @@ export default function BacktestPage() {
                     className="w-full" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">MACD Threshold: {strategy.macdThreshold}</label>
+                  <label className="block text-sm mb-1">MACD Threshold: {strategy.macdThreshold.toFixed(3)}</label>
                   <input type="range" min="-0.1" max="0.1" step="0.001" value={strategy.macdThreshold}
                     onChange={(e) => updateStrategy('macdThreshold', Number(e.target.value))}
                     className="w-full" />
                 </div>
+                {strategy.useV2Logic && (
+                  <div>
+                    <label className="block text-sm mb-1">Crossover Threshold: {strategy.macdCrossoverThreshold.toFixed(3)}</label>
+                    <input type="range" min="-0.01" max="0.01" step="0.001" value={strategy.macdCrossoverThreshold}
+                      onChange={(e) => updateStrategy('macdCrossoverThreshold', Number(e.target.value))}
+                      className="w-full" />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -325,57 +383,61 @@ export default function BacktestPage() {
               </div>
             </div>
 
-            {/* 매수 조건 */}
-            <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-green-500">
-              <h2 className="text-2xl font-semibold mb-4 text-green-300">매수 조건</h2>
+            {/* 매수 조건 (커스텀 모드에서만 표시) */}
+            {!strategy.useV2Logic && (
+              <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-green-500">
+                <h2 className="text-2xl font-semibold mb-4 text-green-300">매수 조건</h2>
 
-              <div className="space-y-2">
-                {[
-                  { key: 'goldenCrossEnabled', label: '골든 크로스' },
-                  { key: 'macdPositiveEnabled', label: 'MACD 양수 돌파' },
-                  { key: 'signalPositiveEnabled', label: 'Signal 양수 돌파' },
-                  { key: 'bullishCandleEnabled', label: '양봉' },
-                  { key: 'macdTrendingUpEnabled', label: 'MACD 상승 추세' },
-                  { key: 'aboveMA20Enabled', label: 'MA20 위' },
-                  { key: 'aboveMA60Enabled', label: 'MA60 위' },
-                ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={strategy[key]}
-                      onChange={(e) => updateStrategy(key, e.target.checked)}
-                      className="w-4 h-4 accent-green-500"
-                    />
-                    <span className="text-sm">{label}</span>
-                  </label>
-                ))}
+                <div className="space-y-2">
+                  {[
+                    { key: 'goldenCrossEnabled', label: '골든 크로스' },
+                    { key: 'macdPositiveEnabled', label: 'MACD 양수 돌파' },
+                    { key: 'signalPositiveEnabled', label: 'Signal 양수 돌파' },
+                    { key: 'bullishCandleEnabled', label: '양봉' },
+                    { key: 'macdTrendingUpEnabled', label: 'MACD 상승 추세' },
+                    { key: 'aboveMA20Enabled', label: 'MA20 위' },
+                    { key: 'aboveMA60Enabled', label: 'MA60 위' },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={strategy[key]}
+                        onChange={(e) => updateStrategy(key, e.target.checked)}
+                        className="w-4 h-4 accent-green-500"
+                      />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* 매도 조건 */}
-            <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-red-500">
-              <h2 className="text-2xl font-semibold mb-4 text-red-300">매도 조건</h2>
+            {/* 매도 조건 (커스텀 모드에서만 표시) */}
+            {!strategy.useV2Logic && (
+              <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-red-500">
+                <h2 className="text-2xl font-semibold mb-4 text-red-300">매도 조건</h2>
 
-              <div className="space-y-2">
-                {[
-                  { key: 'trailingStopEnabled', label: '트레일링 스탑' },
-                  { key: 'takeProfitEnabled', label: '익절' },
-                  { key: 'stopLossEnabled', label: '손절' },
-                  { key: 'macdNegativeEnabled', label: 'MACD 음수 돌파' },
-                  { key: 'deadCrossEnabled', label: '데드 크로스' },
-                ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={strategy[key]}
-                      onChange={(e) => updateStrategy(key, e.target.checked)}
-                      className="w-4 h-4 accent-red-500"
-                    />
-                    <span className="text-sm">{label}</span>
-                  </label>
-                ))}
+                <div className="space-y-2">
+                  {[
+                    { key: 'trailingStopEnabled', label: '트레일링 스탑' },
+                    { key: 'takeProfitEnabled', label: '익절' },
+                    { key: 'stopLossEnabled', label: '손절' },
+                    { key: 'macdNegativeEnabled', label: 'MACD 음수 돌파' },
+                    { key: 'deadCrossEnabled', label: '데드 크로스' },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={strategy[key]}
+                        onChange={(e) => updateStrategy(key, e.target.checked)}
+                        className="w-4 h-4 accent-red-500"
+                      />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 백테스트 실행 버튼 */}
             <button
