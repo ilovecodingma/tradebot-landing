@@ -23,38 +23,98 @@ export const INTERVALS = {
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Upbit에서 OHLCV 데이터 가져오기
+ * Upbit에서 OHLCV 데이터 가져오기 (200개 이상 지원)
  * @param {string} market - 마켓 코드 (예: KRW-BTC)
  * @param {string} interval - 인터벌
- * @param {number} count - 가져올 캔들 개수
+ * @param {number} count - 가져올 캔들 개수 (최대 제한 없음)
  * @returns {Promise<Array>} OHLCV 데이터 배열
  */
 export async function getOHLCV(market, interval = '5분', count = 200) {
   try {
     const intervalPath = INTERVALS[interval]?.value || 'minutes/5';
-    const params = new URLSearchParams({
-      market,
-      interval: intervalPath,
-      count: count.toString(),
-    });
+    const maxPerRequest = 200; // Upbit API 제한
+    const allCandles = [];
 
-    const response = await fetch(`${API_BASE}/candles?${params}`);
+    // 200개 이하면 한 번에 요청
+    if (count <= maxPerRequest) {
+      const params = new URLSearchParams({
+        market,
+        interval: intervalPath,
+        count: count.toString(),
+      });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      const response = await fetch(`${API_BASE}/candles?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      allCandles.push(...data);
+    } else {
+      // 200개 이상이면 여러 번 요청
+      let remainingCount = count;
+      let lastTimestamp = null;
+
+      while (remainingCount > 0 && allCandles.length < count) {
+        const batchCount = Math.min(remainingCount, maxPerRequest);
+        const params = new URLSearchParams({
+          market,
+          interval: intervalPath,
+          count: batchCount.toString(),
+        });
+
+        // 이전 데이터의 마지막 시간 이전 데이터 요청
+        if (lastTimestamp) {
+          params.append('to', lastTimestamp);
+        }
+
+        const response = await fetch(`${API_BASE}/candles?${params}`);
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.length === 0) break; // 더 이상 데이터 없음
+
+        allCandles.push(...data);
+        remainingCount -= data.length;
+
+        // 마지막 캔들의 시간을 다음 요청의 'to' 파라미터로 사용
+        lastTimestamp = data[data.length - 1].candle_date_time_utc;
+
+        // API Rate Limit 대응 (초당 10회 제한)
+        await delay(150);
+
+        // 무한루프 방지
+        if (allCandles.length >= count * 1.5) break;
+      }
     }
 
-    const allData = await response.json();
+    // 중복 제거 및 정렬
+    const uniqueCandles = Array.from(
+      new Map(
+        allCandles.map(c => [
+          c.candle_date_time_utc || c.candle_date_time_kst,
+          c
+        ])
+      ).values()
+    );
 
     // 데이터 정규화 (오래된 것부터)
-    return allData.reverse().map(candle => ({
-      timestamp: candle.candle_date_time_kst || candle.candle_date_time_utc,
-      open: candle.opening_price,
-      high: candle.high_price,
-      low: candle.low_price,
-      close: candle.trade_price,
-      volume: candle.candle_acc_trade_volume,
-    }));
+    return uniqueCandles
+      .sort((a, b) => new Date(a.candle_date_time_utc) - new Date(b.candle_date_time_utc))
+      .slice(0, count)
+      .map(candle => ({
+        timestamp: candle.candle_date_time_kst || candle.candle_date_time_utc,
+        open: candle.opening_price,
+        high: candle.high_price,
+        low: candle.low_price,
+        close: candle.trade_price,
+        volume: candle.candle_acc_trade_volume,
+      }));
   } catch (error) {
     console.error('Failed to fetch OHLCV data:', error);
     throw error;

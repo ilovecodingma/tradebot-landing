@@ -71,23 +71,33 @@ export default function BacktestPage() {
     setBacktestResult(null);
 
     try {
+      // 예상 소요 시간 계산 (200개당 약 0.2초)
+      const estimatedTime = Math.ceil(dataCount / 200) * 0.2;
+      console.log(`데이터 수집 시작: ${dataCount}개 (예상 소요시간: ${estimatedTime.toFixed(1)}초)`);
+
       // 데이터가 없거나 설정이 변경된 경우 자동으로 데이터 로드
       const data = await getOHLCV(selectedMarket, selectedInterval, dataCount);
+      console.log(`데이터 수집 완료: ${data.length}개`);
+
       setOhlcvData(data);
 
       // 약간의 지연으로 UI 업데이트 허용
       setTimeout(() => {
         try {
+          console.log('백테스트 실행 중...');
           const result = runBacktest(data, strategy);
+          console.log('백테스트 완료:', result.stats);
           setBacktestResult(result);
           setError(null);
         } catch (err) {
+          console.error('백테스트 실행 오류:', err);
           setError('백테스트 실행 중 오류: ' + err.message);
         } finally {
           setLoading(false);
         }
       }, 100);
     } catch (err) {
+      console.error('데이터 로드 오류:', err);
       setError('데이터 로드 중 오류: ' + err.message);
       setLoading(false);
     }
@@ -238,16 +248,28 @@ export default function BacktestPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">데이터 개수: {dataCount}</label>
+                  <label className="block text-sm font-medium mb-2">
+                    데이터 개수: {dataCount}
+                    {selectedInterval === '일봉' && dataCount >= 365 && (
+                      <span className="ml-2 text-xs text-green-400">(약 {Math.floor(dataCount / 365)}년)</span>
+                    )}
+                  </label>
                   <input
                     type="range"
                     min="100"
-                    max="1000"
+                    max="2000"
                     step="50"
                     value={dataCount}
                     onChange={(e) => setDataCount(Number(e.target.value))}
                     className="w-full"
                   />
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>100</span>
+                    <span>500</span>
+                    <span>1000</span>
+                    <span>1500</span>
+                    <span>2000</span>
+                  </div>
                 </div>
               </div>
             </div>
