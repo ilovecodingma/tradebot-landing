@@ -70,6 +70,12 @@ const Navbar = () => {
               >
                 백테스트
               </Link>
+              <Link
+                href="/live"
+                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+              >
+                라이브 트레이딩
+              </Link>
               {user ? (
                 <div className="relative">
                   <button
@@ -221,6 +227,13 @@ const Navbar = () => {
               className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
             >
               백테스트
+            </Link>
+            <Link
+              href="/live"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-primary-600 font-medium transition-colors"
+            >
+              라이브 트레이딩
             </Link>
             {user ? (
               <>
