@@ -4,7 +4,7 @@
  */
 
 // EMA 계산 (Python pandas ewm과 동일)
-function calculateEMA(data, period) {
+export function calculateEMA(data, period) {
   const k = 2 / (period + 1);
   const ema = new Array(data.length);
 
