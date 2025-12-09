@@ -45,22 +45,32 @@ function BacktestChart({ data, result, strategy }) {
 
   // 차트 데이터 준비 (메모이제이션)
   const chartData = useMemo(() => {
-    const fullData = data.map((candle, idx) => {
-      const trade = result.trades.find(t => t.index === idx);
+    if (!data || !Array.isArray(data) || data.length === 0) return [];
+    if (!result || !result.indicators) return [];
 
-      return {
-        index: idx,
-        timestamp: formatDate(candle.timestamp),
-        price: candle.close,
-        macd: result.indicators.macd[idx] || null,
-        signal: result.indicators.signal[idx] || null,
-        histogram: result.indicators.histogram[idx] || null,
-        ma20: result.indicators.ma20[idx] || null,
-        ma60: result.indicators.ma60[idx] || null,
-        buy: trade && trade.type === 'BUY' ? candle.close : null,
-        sell: trade && trade.type === 'SELL' ? candle.close : null,
-      };
-    });
+    const fullData = data
+      .map((candle, idx) => {
+        // candle이 undefined이거나 필수 필드가 없으면 skip
+        if (!candle || typeof candle.close !== 'number' || !candle.timestamp) {
+          return null;
+        }
+
+        const trade = result.trades?.find(t => t.index === idx);
+
+        return {
+          index: idx,
+          timestamp: formatDate(candle.timestamp),
+          price: candle.close,
+          macd: result.indicators.macd?.[idx] ?? null,
+          signal: result.indicators.signal?.[idx] ?? null,
+          histogram: result.indicators.histogram?.[idx] ?? null,
+          ma20: result.indicators.ma20?.[idx] ?? null,
+          ma60: result.indicators.ma60?.[idx] ?? null,
+          buy: trade && trade.type === 'BUY' ? candle.close : null,
+          sell: trade && trade.type === 'SELL' ? candle.close : null,
+        };
+      })
+      .filter(item => item !== null); // null 제거
 
     // 500개 이상이면 다운샘플링
     return downsampleData(fullData, 300);
@@ -68,11 +78,15 @@ function BacktestChart({ data, result, strategy }) {
 
   // 자산 차트 데이터 (메모이제이션)
   const equityData = useMemo(() => {
-    const fullEquity = result.equity.map(e => ({
-      timestamp: formatDate(e.timestamp),
-      equity: e.equity,
-      initialEquity: result.stats.initialCash,
-    }));
+    if (!result || !result.equity || !Array.isArray(result.equity)) return [];
+
+    const fullEquity = result.equity
+      .filter(e => e && e.timestamp && typeof e.equity === 'number')
+      .map(e => ({
+        timestamp: formatDate(e.timestamp),
+        equity: e.equity,
+        initialEquity: result.stats?.initialCash || 0,
+      }));
 
     return downsampleData(fullEquity, 300);
   }, [result]);
@@ -98,8 +112,17 @@ function BacktestChart({ data, result, strategy }) {
 
   // X축 표시 간격 계산
   const xAxisInterval = useMemo(() => {
-    return Math.floor(chartData.length / 10);
+    return chartData.length > 0 ? Math.floor(chartData.length / 10) : 0;
   }, [chartData.length]);
+
+  // 데이터가 없으면 표시하지 않음
+  if (!chartData || chartData.length === 0) {
+    return (
+      <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-lg p-6 border border-purple-500">
+        <p className="text-gray-400">차트 데이터가 없습니다.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
