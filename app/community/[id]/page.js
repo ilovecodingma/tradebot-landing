@@ -468,7 +468,7 @@ export default function PostDetailPage() {
                   로그인하기
                 </Link>
               </div>
-            )}
+            ) : null}
 
             <div className="space-y-6">
               {post.comments && post.comments.length > 0 ? (
