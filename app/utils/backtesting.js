@@ -3,30 +3,17 @@
  * 다양한 전략을 커스터마이징할 수 있는 백테스팅 엔진
  */
 
-// EMA 계산 (Python pandas ewm과 동일)
+// EMA 계산 (Python pandas ewm(span=period, adjust=False).mean() 완전히 동일)
 export function calculateEMA(data, period) {
-  const k = 2 / (period + 1);
   const ema = new Array(data.length);
+  const alpha = 2 / (period + 1);
 
-  // 첫 번째 유효한 값부터 SMA로 시작
-  let sum = 0;
-  let count = 0;
-  for (let i = 0; i < Math.min(period, data.length); i++) {
-    if (data[i] !== undefined && !isNaN(data[i])) {
-      sum += data[i];
-      count++;
-    }
-  }
+  // 첫 번째 값으로 시작
+  ema[0] = data[0];
 
-  if (count > 0) {
-    ema[period - 1] = sum / count;
-  }
-
-  // EMA 계산
-  for (let i = period; i < data.length; i++) {
-    if (data[i] !== undefined && !isNaN(data[i]) && ema[i - 1] !== undefined) {
-      ema[i] = data[i] * k + ema[i - 1] * (1 - k);
-    }
+  // EMA 계산: EMA[i] = alpha * data[i] + (1-alpha) * EMA[i-1]
+  for (let i = 1; i < data.length; i++) {
+    ema[i] = alpha * data[i] + (1 - alpha) * ema[i - 1];
   }
 
   return ema;

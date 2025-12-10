@@ -9,8 +9,8 @@ export default function BacktestPage() {
   // 데이터 상태
   const [markets, setMarkets] = useState([]);
   const [selectedMarket, setSelectedMarket] = useState('KRW-BTC');
-  const [selectedInterval, setSelectedInterval] = useState('5분');
-  const [dataCount, setDataCount] = useState(500);
+  const [selectedInterval, setSelectedInterval] = useState('일봉');
+  const [dataCount, setDataCount] = useState(365);
   const [ohlcvData, setOhlcvData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,20 +20,20 @@ export default function BacktestPage() {
   // 백테스트 결과
   const [backtestResult, setBacktestResult] = useState(null);
 
-  // 전략 파라미터
+  // 전략 파라미터 (Python trading-bot-v1-main과 완전히 동일)
   const [strategy, setStrategy] = useState({
     initialCash: 10000000,
     commission: 0.0005,
     fastPeriod: 12,
     slowPeriod: 26,
-    signalPeriod: 9,
+    signalPeriod: 7,  // Python 기본값
     macdThreshold: 0,
-    takeProfit: 0.03,
-    stopLoss: 0.01,
+    takeProfit: 0.05,  // Python 기본값 5%
+    stopLoss: 0.01,    // Python 기본값 1%
     trailingStop: 0.1,
-    minHoldingPeriod: 5,
+    minHoldingPeriod: 1,  // Python 기본값
     // V2 로직 사용 (trading-bot-v1과 동일)
-    useV2Logic: false,
+    useV2Logic: true,  // 기본으로 활성화
     macdCrossoverThreshold: 0.0,
     // 매수 조건
     goldenCrossEnabled: true,
